@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music — RICEY</title>
+    <meta name="description" content="Music and releases by Ricey.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="images/music.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">RICEY</a>
+            <div class="nav-links">
+                <a href="about.html">About</a>
+                <a href="music.html" class="active">Music</a>
+                <a href="services.html">Services</a>
+                <a href="contact.html" class="nav-cta">Get In Touch</a>
+            </div>
+            <button class="nav-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Music Page -->
+    <section class="page-hero" style="background-image: url('images/music.jpg');">
+        <div class="page-hero-overlay"></div>
+        <div class="page-content">
+            <h2 class="section-label">Music</h2>
+            <p class="section-intro">Releases and productions.</p>
+
+            <div class="music-grid">
+                <!-- Placeholder cards — replace with real releases when ready -->
+                <div class="music-card placeholder-card">
+                    <div class="music-card-art"></div>
+                    <div class="music-card-info">
+                        <span class="music-card-title">Coming Soon</span>
+                        <span class="music-card-detail">New music on the way</span>
+                    </div>
+                </div>
+                <div class="music-card placeholder-card">
+                    <div class="music-card-art"></div>
+                    <div class="music-card-info">
+                        <span class="music-card-title">Coming Soon</span>
+                        <span class="music-card-detail">Stay tuned</span>
+                    </div>
+                </div>
+                <div class="music-card placeholder-card">
+                    <div class="music-card-art"></div>
+                    <div class="music-card-info">
+                        <span class="music-card-title">Coming Soon</span>
+                        <span class="music-card-detail">More to come</span>
+                    </div>
+                </div>
+            </div>
+
+            <!--
+                When you have releases, replace a placeholder card with something like:
+
+                <div class="music-card">
+                    <div class="music-card-art">
+                        <img src="images/artwork.jpg" alt="Track Name artwork" loading="lazy" decoding="async">
+                    </div>
+                    <div class="music-card-info">
+                        <span class="music-card-title">Track Name</span>
+                        <span class="music-card-detail">2026</span>
+                    </div>
+                    <a href="https://open.spotify.com/..." class="music-card-link" target="_blank">Listen</a>
+                </div>
+
+                Or embed a Spotify/SoundCloud player:
+                <iframe src="https://open.spotify.com/embed/track/..." ...></iframe>
+            -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <span class="footer-logo">RICEY</span>
+            <span class="footer-copy">&copy; 2026 Ricey. All rights reserved.</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
