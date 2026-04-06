@@ -11,13 +11,13 @@
 const TRACKS = [
     {
         name: 'Track 1',
-        before: 'audio/Track 1 - Before.wav',
-        after: 'audio/Track 1 - After.wav'
+        before: 'audio/Track 1 - Before.mp3',
+        after: 'audio/Track 1 - After.mp3'
     },
     {
         name: 'Track 2',
-        before: 'audio/Track 2 - Before.wav',
-        after: 'audio/Track 2 - After.wav'
+        before: 'audio/Track 2 - Before.mp3',
+        after: 'audio/Track 2 - After.mp3'
     }
 ];
 
