@@ -564,12 +564,47 @@ code {
     border-radius: 4px;
 }
 
+/* Bottom row: track info + volume */
+.player-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Track info box */
+.track-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    min-width: 0;
+}
+
+.track-info-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.2;
+}
+
+.track-info-artist {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.02em;
+}
+
 /* Volume control */
 .volume-control {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 0.75rem;
     color: rgba(255, 255, 255, 0.35);
 }
 

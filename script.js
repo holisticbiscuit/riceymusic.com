@@ -11,11 +11,15 @@
 const TRACKS = [
     {
         name: 'Track 1',
+        title: 'Glass Skin',
+        artist: 'Leon Yara',
         before: 'audio/Track 1 - Before.mp3',
         after: 'audio/Track 1 - After.mp3'
     },
     {
         name: 'Track 2',
+        title: 'On My Mind',
+        artist: 'Leon Yara',
         before: 'audio/Track 2 - Before.mp3',
         after: 'audio/Track 2 - After.mp3'
     }
@@ -47,6 +51,8 @@ const TRACKS = [
     const ctx = waveformCanvas.getContext('2d');
     const timeDisplay = document.querySelector('.time-display');
     const volumeSlider = document.querySelector('.volume-slider');
+    const trackInfoTitle = document.querySelector('.track-info-title');
+    const trackInfoArtist = document.querySelector('.track-info-artist');
 
     // Waveform data cache: keyed by audio src URL
     const waveformCache = {};
@@ -193,6 +199,10 @@ const TRACKS = [
         trackBtns.forEach((btn, i) => {
             btn.classList.toggle('active', i === index);
         });
+
+        // Update track info box
+        if (trackInfoTitle) trackInfoTitle.textContent = TRACKS[index].title || '';
+        if (trackInfoArtist) trackInfoArtist.textContent = TRACKS[index].artist || '';
 
         // Load and draw waveform
         loadWaveform();
