@@ -20,6 +20,7 @@
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
     --font-display: 'Instrument Serif', 'Iowan Old Style', 'Times New Roman', serif;
     --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+    --font-wordmark: 'Bodoni Moda', 'Didot', 'Bodoni MT', 'Times New Roman', serif; /* matches the RICEY logo */
 
     /* Warm paper ink (type + solid fills; hairlines stay cool white) */
     --paper: #f4f1ec;
@@ -37,7 +38,7 @@
     --text-base: clamp(0.95rem, 0.9rem + 0.25vw, 1.0625rem);
     --text-lead: clamp(1.3rem, 1.05rem + 1.1vw, 1.9rem);
     --text-title: clamp(2.75rem, 1.6rem + 5vw, 5.5rem);
-    --text-hero: clamp(3rem, 1.25rem + 11vw, 9.5rem);
+    --text-hero: clamp(3rem, 1.25rem + 11vw, 8.25rem);
 }
 
 
@@ -237,9 +238,10 @@ html.js body.loaded #navbar {
 }
 
 .nav-logo {
-    font-weight: 600;
-    font-size: 1.1rem;
-    letter-spacing: 0.18em;
+    font-family: var(--font-wordmark);
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: 0.32em;
     color: var(--paper);
 }
 
@@ -443,13 +445,15 @@ html.js body.loaded #navbar {
 /* --- Hero (Home Page) --- */
 
 .hero-title {
+    font-family: var(--font-wordmark);
     font-size: var(--text-hero);
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-indent: 0.2em; /* recenters wide-tracked centered text */
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-indent: 0.25em; /* recenters wide-tracked centered text */
     color: var(--paper);
     line-height: 0.95;
     margin-bottom: 1.25rem;
+    white-space: nowrap; /* the wordmark never wraps */
 }
 
 /* Per-letter masked rise (spans injected by script.js) */
@@ -1467,9 +1471,10 @@ footer {
 }
 
 .footer-logo {
-    font-weight: 600;
+    font-family: var(--font-wordmark);
+    font-weight: 500;
     font-size: 0.85rem;
-    letter-spacing: 0.3em;
+    letter-spacing: 0.35em;
     color: rgba(244, 241, 236, 0.45);
 }
 
@@ -1581,8 +1586,8 @@ footer {
     }
 
     .hero-title {
-        letter-spacing: 0.1em;
-        text-indent: 0.1em;
+        letter-spacing: 0.14em;
+        text-indent: 0.14em;
     }
 }
 
