@@ -7,17 +7,18 @@
     <script src="script.js" defer></script>
     <title>Services — RICEY</title>
     <meta name="description" content="Mixing and mastering services by Ricey.">
-    <link rel="icon" type="image/jpeg" href="images/hero.jpg">
+    <link rel="icon" type="image/png" href="images/favicon-64.png">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <meta property="og:title" content="Services — RICEY">
     <meta property="og:description" content="Professional mixing and mastering services by Ricey.">
-    <meta property="og:image" content="https://riceymusic.com/images/hero.jpg">
+    <meta property="og:image" content="https://riceymusic.com/images/og-card.jpg">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Services — RICEY">
     <meta name="twitter:description" content="Professional mixing and mastering services by Ricey.">
-    <meta name="twitter:image" content="https://riceymusic.com/images/hero.jpg">
+    <meta name="twitter:image" content="https://riceymusic.com/images/og-card.jpg">
     <link rel="stylesheet" href="style.css">
-    <link rel="preload" as="image" href="images/services.jpg">
+    <link rel="preload" as="image" href="images/services.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -44,7 +45,7 @@
     </nav>
 
     <!-- Services Page -->
-    <section class="page-hero" style="background-image: url('images/services.jpg');">
+    <section class="page-hero" style="background-image: url('images/services.webp');">
         <div class="page-hero-overlay"></div>
         <div class="page-content">
             <h2 class="section-label" data-index="03">Mastering</h2>
@@ -124,9 +125,24 @@
 
     <!-- Footer -->
     <footer>
+        <div class="footer-ticker" aria-hidden="true">
+            <div class="footer-ticker-track">
+                <span>YEARS &middot; OUT NOW ON MAU5TRAP &middot; RICEY &middot; YEARS &middot; OUT NOW ON MAU5TRAP &middot; RICEY &middot; YEARS &middot; OUT NOW ON MAU5TRAP &middot; RICEY &middot; </span><span>YEARS &middot; OUT NOW ON MAU5TRAP &middot; RICEY &middot; YEARS &middot; OUT NOW ON MAU5TRAP &middot; RICEY &middot; YEARS &middot; OUT NOW ON MAU5TRAP &middot; RICEY &middot; </span>
+            </div>
+        </div>
         <div class="container footer-container">
-            <span class="footer-logo">RICEY</span>
-            <span class="footer-copy">&copy; 2026 Ricey. All rights reserved.</span>
+            <div class="footer-row">
+                <span class="footer-logo">RICEY</span>
+                <nav class="footer-socials" aria-label="Social links">
+                    <a href="https://www.instagram.com/riceymusic/" target="_blank" rel="noopener">Instagram</a>
+                    <a href="https://soundcloud.com/riceymusic" target="_blank" rel="noopener">SoundCloud</a>
+                    <a href="https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c" target="_blank" rel="noopener">Spotify</a>
+                    <a href="mailto:contact@riceymusic.com">Email</a>
+                </nav>
+            </div>
+            <div class="footer-row footer-row-bottom">
+                <span class="footer-copy">&copy; 2026 Ricey &middot; mau5trap. All rights reserved.</span>
+            </div>
         </div>
     </footer>
 

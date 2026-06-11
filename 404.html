@@ -5,20 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>document.documentElement.classList.add('js');(function(){var done=false;var go=function(){if(!done&&document.body){done=true;document.body.classList.add('loaded')}};var arm=function(){requestAnimationFrame(go);setTimeout(go,120)};if(document.readyState!=='loading'){arm()}else{document.addEventListener('readystatechange',function(){if(document.readyState!=='loading')arm()});document.addEventListener('DOMContentLoaded',arm)}})();</script>
     <script src="script.js" defer></script>
-    <title>Music — RICEY</title>
-    <meta name="description" content="Music and releases by Ricey.">
+    <title>404 — RICEY</title>
+    <meta name="robots" content="noindex">
     <link rel="icon" type="image/png" href="images/favicon-64.png">
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-    <meta property="og:title" content="Music — RICEY">
-    <meta property="og:description" content="New single Years out now on mau5trap.">
-    <meta property="og:image" content="https://riceymusic.com/images/og-card.jpg">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Music — RICEY">
-    <meta name="twitter:description" content="New single Years out now on mau5trap.">
-    <meta name="twitter:image" content="https://riceymusic.com/images/og-card.jpg">
     <link rel="stylesheet" href="style.css">
-    <link rel="preload" as="image" href="images/music.webp">
+    <link rel="preload" as="image" href="images/hero.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -32,7 +24,7 @@
             <a href="index.html" class="nav-logo">RICEY</a>
             <div class="nav-links">
                 <a href="about.html">About</a>
-                <a href="music.html" class="active">Music</a>
+                <a href="music.html">Music</a>
                 <a href="services.html">Services</a>
                 <a href="contact.html" class="nav-cta">Get In Touch</a>
             </div>
@@ -44,38 +36,17 @@
         </div>
     </nav>
 
-    <!-- Music Page -->
-    <section class="page-hero" style="background-image: url('images/music.webp');">
-        <video class="hero-bg-video" data-src="images/years-canvas-bg.mp4" muted loop playsinline preload="none" aria-hidden="true"></video>
+    <!-- 404 -->
+    <section class="page-hero" style="background-image: url('images/hero.webp');">
         <div class="page-hero-overlay"></div>
-        <div class="page-content">
-            <h2 class="section-label" data-index="02">Music</h2>
-            <p class="section-intro">Releases and productions.</p>
-
-            <div class="featured-release">
-                <div class="featured-release-art">
-                    <video data-src="images/years-canvas.mp4" poster="images/years.jpg" muted loop playsinline preload="none" aria-label="Years cover art animation"></video>
-                </div>
-                <div class="featured-release-info">
-                    <span class="featured-release-label"><span class="badge-dot"></span>Out now on mau5trap</span>
-                    <h3 class="featured-release-title">Years</h3>
-                    <span class="featured-release-meta">mau5trap &middot; 2026 &middot; Single</span>
-                    <p class="featured-release-desc">
-                        Ricey's debut single on mau5trap. Progressive house. Personal.
-                        About time passing and everything you carry with you when it does.
-                    </p>
-                    <a href="https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c" class="btn-primary btn-icon" target="_blank" rel="noopener">
-                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.59 14.42a.62.62 0 0 1-.86.21c-2.35-1.44-5.3-1.76-8.79-.96a.625.625 0 1 1-.28-1.22c3.81-.87 7.08-.5 9.72 1.11.3.18.39.57.21.86zm1.22-2.72a.78.78 0 0 1-1.07.26c-2.69-1.65-6.79-2.13-9.97-1.17a.78.78 0 1 1-.45-1.49c3.63-1.1 8.15-.57 11.24 1.33.37.22.49.7.25 1.07zm.11-2.84C14.7 8.99 9.39 8.82 6.35 9.74a.936.936 0 1 1-.54-1.79c3.49-1.06 9.35-.85 13.04 1.34.44.26.59.83.33 1.28-.26.44-.83.59-1.28.33z"/></svg>
-                        Listen on Spotify
-                    </a>
-                </div>
+        <div class="page-hero-content">
+            <span class="error-code">404</span>
+            <h1 class="error-title">Lost in the noise.</h1>
+            <p class="error-copy">This page doesn&rsquo;t exist, or it moved. The music is still where you left it.</p>
+            <div class="hero-links">
+                <a href="index.html" class="btn-primary">Back home</a>
+                <a href="music.html" class="btn-secondary">Music</a>
             </div>
-
-            <div class="spotify-embed">
-                <iframe src="https://open.spotify.com/embed/track/6IcqC8WxfxqSkZU4AEIV3c?utm_source=generator&amp;theme=0" width="100%" height="152" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Years by Ricey on Spotify"></iframe>
-            </div>
-
-            <p class="music-note">More music coming soon.</p>
         </div>
     </section>
 

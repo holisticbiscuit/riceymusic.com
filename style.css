@@ -156,7 +156,7 @@ html.js body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: #0a0a0a;
+    background: #0a0a0a url('images/mark.png') center / 56px 56px no-repeat;
     z-index: 9999;
     opacity: 1;
     pointer-events: none;
@@ -198,8 +198,8 @@ html.js body.page-exit .page-content {
     background: linear-gradient(to bottom,
         rgba(12, 12, 12, 0.8),
         rgba(10, 10, 10, 0.58));
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
@@ -359,9 +359,11 @@ html.js body.loaded #navbar {
     overflow: hidden; /* clips the Ken Burns layer */
 }
 
-/* Ken Burns settle: duplicate of the inline background on a pseudo, scales
-   1.06 -> 1 then fades itself out so the layer is dropped after the move.
-   Desktop + motion-OK only — mobile skips the extra composited layer. */
+/* Living photography: Ken Burns settle into a perpetual imperceptible drift,
+   plus mouse parallax via the independent `translate` property (composes with
+   the keyframe `transform` — they never fight). The resting scale keeps a
+   margin so parallax never exposes edges.
+   Desktop + motion-OK only — mobile keeps the static photo. */
 @media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
     html.js .page-hero::before {
         content: '';
@@ -369,19 +371,89 @@ html.js body.loaded #navbar {
         inset: 0;
         background: inherit;
         z-index: 0;
-        transform: scale(1.06);
+        transform: scale(1.08);
         transform-origin: 50% 40%;
+        translate: var(--par-x, 0px) var(--par-y, 0px);
     }
 
     html.js body.loaded .page-hero::before {
-        animation: hero-settle 2200ms var(--ease-lux) both;
+        animation:
+            hero-settle 2200ms var(--ease-lux) both,
+            hero-drift 44s ease-in-out 2200ms infinite alternate;
     }
 }
 
 @keyframes hero-settle {
-    from { transform: scale(1.06); opacity: 1; }
-    99%  { opacity: 1; }
-    to   { transform: scale(1); opacity: 0; }
+    from { transform: scale(1.08); }
+    to   { transform: scale(1.03); }
+}
+
+@keyframes hero-drift {
+    from { transform: scale(1.03); }
+    to   { transform: scale(1.06) translateY(-1%); }
+}
+
+/* Fullscreen ambient video (music page) — src assigned by JS on desktop,
+   motion-OK connections only; sits under the overlay like the photo layer */
+.hero-bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0;
+    scale: 1.05;
+    translate: calc(var(--par-x, 0px) * 1.4) calc(var(--par-y, 0px) * 1.4);
+    transition: opacity 1.4s ease;
+    pointer-events: none;
+}
+
+.hero-bg-video.is-on {
+    opacity: 1;
+}
+
+/* Film dust canvas (injected by JS, desktop only) */
+.dust-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Motion pauses: hero offscreen (.is-off, set by JS) or user toggle */
+html.js body.loaded .page-hero.is-off::before,
+body.motion-off .page-hero::before,
+body.motion-off .footer-ticker-track {
+    animation-play-state: paused;
+}
+
+/* WCAG 2.2.2 — pause control for autoplaying motion (injected by JS) */
+.motion-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1200;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 236, 0.55);
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 100px;
+    padding: 0.45rem 0.95rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: color 0.25s ease, border-color 0.25s ease;
+}
+
+.motion-toggle:hover {
+    color: var(--paper);
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Cinematic layered vignette (replaces the flat scrim) */
@@ -736,6 +808,71 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
 
 /* --- About --- */
 
+/* --- First-Visit Intro (logo draws itself on the veil) --- */
+
+.intro-mark {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: opacity 600ms var(--ease-lux);
+}
+
+.intro-mark.is-done {
+    opacity: 0;
+}
+
+.intro-mark svg {
+    width: 92px;
+    height: 92px;
+}
+
+.intro-mark [stroke] {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: mark-draw 800ms var(--ease-lux) forwards;
+    animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+@keyframes mark-draw {
+    to { stroke-dashoffset: 0; }
+}
+
+
+/* --- 404 --- */
+
+.error-code {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    color: rgba(244, 241, 236, 0.45);
+    display: block;
+    margin-bottom: 1.25rem;
+}
+
+.error-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: var(--text-title);
+    line-height: 1.05;
+    color: var(--paper);
+    margin-bottom: 1.25rem;
+    text-wrap: balance;
+}
+
+.error-copy {
+    color: var(--paper-mid);
+    max-width: 44ch;
+    margin: 0 auto 2.5rem;
+}
+
+
 .about-lead {
     font-size: var(--text-lead);
     font-weight: 400;
@@ -763,7 +900,10 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
 .audio-player {
     position: relative;
     border: 1px solid transparent;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)) padding-box;
+    background:
+        radial-gradient(240px circle at var(--lx, -300px) var(--ly, -300px),
+            rgba(255, 255, 255, 0.06), transparent 65%) padding-box,
+        linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)) padding-box;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.05),
         0 1px 2px rgba(0, 0, 0, 0.45),
@@ -919,14 +1059,16 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.featured-release-art img {
+.featured-release-art img,
+.featured-release-art video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 1200ms var(--ease-lux);
 }
 
-.featured-release:hover .featured-release-art img {
+.featured-release:hover .featured-release-art img,
+.featured-release:hover .featured-release-art video {
     transform: scale(1.04);
 }
 
@@ -984,6 +1126,18 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
     font-size: 0.85rem;
     color: rgba(244, 241, 236, 0.5);
     letter-spacing: 0.03em;
+}
+
+/* Spotify embed */
+.spotify-embed {
+    max-width: 640px;
+    margin-bottom: 2.5rem;
+}
+
+.spotify-embed iframe {
+    display: block;
+    border-radius: 12px;
+    border: 0;
 }
 
 
@@ -1190,6 +1344,19 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
 
 .play-btn:active {
     transform: scale(0.94);
+}
+
+/* Audio-reactive halo: --pulse (0..1) written per-frame while playing */
+.play-btn::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 calc(var(--pulse, 0) * 5px) rgba(255, 255, 255, 0.08),
+        0 0 calc(var(--pulse, 0) * 28px) calc(var(--pulse, 0) * 4px) rgba(255, 255, 255, 0.25);
+    opacity: var(--pulse, 0);
+    pointer-events: none;
 }
 
 /* Play/pause crossfade (driven by .is-playing, not display:none) */
@@ -1459,15 +1626,98 @@ footer {
     position: relative;
     z-index: 2;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 2rem 0;
+    padding: 0 0 2rem;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(8px);
 }
 
+/* Release ticker */
+.footer-ticker {
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.85rem 0;
+    margin-bottom: 2.25rem;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.footer-ticker-track {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: ticker 38s linear infinite;
+}
+
+.footer-ticker-track span {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 236, 0.35);
+    padding-right: 0.3em;
+}
+
+@keyframes ticker {
+    to { transform: translateX(-50%); }
+}
+
 .footer-container {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.footer-row {
+    display: flex;
+    align-items: baseline;
     justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.footer-row-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 1.25rem;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 1.75rem;
+    flex-wrap: wrap;
+}
+
+.footer-socials a {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(244, 241, 236, 0.5);
+    transition: color 0.3s ease;
+}
+
+.footer-socials a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.45s var(--ease-lux);
+}
+
+.footer-socials a:hover {
+    color: var(--paper);
+}
+
+.footer-socials a:hover::after,
+.footer-socials a:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left center;
 }
 
 .footer-logo {
@@ -1551,10 +1801,15 @@ footer {
         align-items: center;
     }
 
-    .footer-container {
+    .footer-row {
         flex-direction: column;
-        gap: 0.75rem;
+        align-items: center;
+        gap: 1rem;
         text-align: center;
+    }
+
+    .footer-socials {
+        justify-content: center;
     }
 }
 
@@ -1611,6 +1866,7 @@ footer {
 
     /* Infinite/alternate animations: explicit end states */
     .hero-badge .badge-dot { animation: none; }
+    .footer-ticker-track { animation: none; }
 
     /* .nav-cta's base transition uses !important — re-kill it here */
     .nav-cta {

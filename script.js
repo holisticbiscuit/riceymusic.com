@@ -55,6 +55,311 @@
 
 
 // -----------------------------------------------
+// First-Visit Intro — the fractured-square mark
+// draws itself on a black cover, once per session.
+// Sits above the veil; both are black, so the
+// hand-off is seamless.
+// -----------------------------------------------
+
+(function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let seen = null;
+    try { seen = sessionStorage.getItem('ricey-intro'); } catch { return; }
+    if (seen) return;
+    // If the write fails (quota, read-only storage), skip the intro rather
+    // than replaying it on every navigation.
+    try { sessionStorage.setItem('ricey-intro', '1'); } catch { return; }
+
+    const cover = document.createElement('div');
+    cover.className = 'intro-mark';
+    cover.setAttribute('aria-hidden', 'true');
+    cover.innerHTML =
+        '<svg viewBox="0 0 100 100" fill="none" stroke="#f4f1ec" stroke-linecap="square">' +
+        '<rect x="3" y="3" width="94" height="94" stroke-width="1.4" pathLength="1" style="--d:0"/>' +
+        '<path d="M0,65 L55,51" stroke-width="1.6" pathLength="1" style="--d:140"/>' +
+        '<path d="M55,51 L99,17" stroke-width="0.8" pathLength="1" style="--d:240"/>' +
+        '<path d="M2,17 L34,38" stroke-width="0.7" pathLength="1" style="--d:320"/>' +
+        '<path d="M57,8 L34,38 L13,58" stroke-width="0.7" pathLength="1" style="--d:400"/>' +
+        '<path d="M99,80 L68,58" stroke-width="1.0" pathLength="1" style="--d:460"/>' +
+        '<path d="M84,99 L68,58" stroke-width="0.9" pathLength="1" style="--d:520"/>' +
+        '<path d="M55,51 L61,71 L68,58 L55,51" stroke-width="0.6" pathLength="1" style="--d:580"/>' +
+        '<path d="M61,71 L47,99" stroke-width="0.6" pathLength="1" style="--d:640"/>' +
+        '</svg>';
+
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        cover.classList.add('is-done');
+        cover.addEventListener('transitionend', () => cover.remove(), { once: true });
+        setTimeout(() => cover.remove(), 1200); // fallback if transitionend never fires
+    };
+
+    const mount = () => {
+        document.body.appendChild(cover);
+        setTimeout(finish, 1750);
+        // The page behind the cover is interactive — yield immediately if
+        // the user starts doing something.
+        window.addEventListener('pointerdown', finish, { once: true });
+        window.addEventListener('keydown', finish, { once: true });
+    };
+    if (document.body) mount();
+    else document.addEventListener('DOMContentLoaded', mount);
+})();
+
+
+// -----------------------------------------------
+// Motion Control — WCAG 2.2.2 pause for autoplaying
+// motion (videos, drift, dust, ticker). Injected
+// button, persisted; also reacts to live changes of
+// prefers-reduced-motion.
+// -----------------------------------------------
+
+(function () {
+    const KEY = 'ricey-motion';
+    let off = false;
+    try { off = localStorage.getItem(KEY) === 'off'; } catch {}
+
+    const btn = document.createElement('button');
+    btn.className = 'motion-toggle';
+    btn.type = 'button';
+
+    function apply(persist) {
+        document.body.classList.toggle('motion-off', off);
+        document.querySelectorAll('video').forEach((v) => {
+            if (off) v.pause();
+            else if (v.currentSrc) v.play().catch(() => {});
+        });
+        btn.textContent = off ? 'Play motion' : 'Pause motion';
+        btn.setAttribute('aria-pressed', String(off));
+        window.dispatchEvent(new CustomEvent('ricey:motion', { detail: { off } }));
+        if (persist) {
+            try { localStorage.setItem(KEY, off ? 'off' : 'on'); } catch {}
+        }
+    }
+
+    btn.addEventListener('click', () => {
+        off = !off;
+        apply(true);
+    });
+
+    // OS-level preference flipping mid-session pauses motion too
+    const rmq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (rmq.addEventListener) {
+        rmq.addEventListener('change', (e) => {
+            if (e.matches && !off) { off = true; apply(false); }
+        });
+    }
+
+    const mount = () => {
+        document.body.appendChild(btn);
+        apply(false);
+    };
+    if (document.body) mount();
+    else document.addEventListener('DOMContentLoaded', mount);
+})();
+
+
+// -----------------------------------------------
+// Hero Mouse Parallax (fine pointers, motion-OK)
+// Writes --par-x/--par-y; the photo layer and the
+// ambient video consume them via `translate`.
+// -----------------------------------------------
+
+(function () {
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const hero = document.querySelector('.page-hero');
+    if (!hero) return;
+
+    const MAX = 8; // px — must stay inside the photo layer's 1.03 scale margin (1.2% of height at the drift trough)
+    let tx = 0, ty = 0, x = 0, y = 0, raf = null;
+
+    function loop() {
+        x += (tx - x) * 0.06;
+        y += (ty - y) * 0.06;
+        hero.style.setProperty('--par-x', x.toFixed(2) + 'px');
+        hero.style.setProperty('--par-y', y.toFixed(2) + 'px');
+        raf = (Math.abs(tx - x) > 0.05 || Math.abs(ty - y) > 0.05)
+            ? requestAnimationFrame(loop) : null;
+    }
+
+    window.addEventListener('mousemove', (e) => {
+        tx = -((e.clientX / window.innerWidth) - 0.5) * 2 * MAX;
+        ty = -((e.clientY / window.innerHeight) - 0.5) * 2 * MAX;
+        if (!raf) raf = requestAnimationFrame(loop);
+    }, { passive: true });
+})();
+
+
+// -----------------------------------------------
+// Film Dust (desktop, motion-OK) — slow motes over
+// the hero photo, dimmed by the overlay above them.
+// -----------------------------------------------
+
+(function () {
+    if (!window.matchMedia('(pointer: fine) and (min-width: 769px)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const hero = document.querySelector('.page-hero');
+    const overlay = hero && hero.querySelector('.page-hero-overlay');
+    if (!hero || !overlay) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'dust-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    hero.insertBefore(canvas, overlay);
+    const ctx = canvas.getContext('2d');
+
+    let w = 0, h = 0, raf = null, motionOff = false;
+    // Render at CSS resolution and ~30fps — motes are soft sub-2px dots,
+    // a hi-DPI 60fps backing store is pure bandwidth waste.
+    const DPR = 1;
+    let frameToggle = false;
+    const motes = [];
+
+    function size() {
+        const r = hero.getBoundingClientRect();
+        w = r.width; h = r.height;
+        canvas.width = w * DPR;
+        canvas.height = h * DPR;
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+
+    function seed() {
+        motes.length = 0;
+        const count = Math.round(Math.min(40, w / 36));
+        for (let i = 0; i < count; i++) {
+            motes.push({
+                x: Math.random() * 1,        // 0..1 of width
+                y: Math.random() * 1,        // 0..1 of height
+                r: 0.6 + Math.random() * 1.6,
+                vy: 0.00004 + Math.random() * 0.00009,  // fraction of height per ms
+                amp: 6 + Math.random() * 18,
+                phase: Math.random() * 6.28,
+                speed: 0.0002 + Math.random() * 0.0004,
+                a: 0.05 + Math.random() * 0.11
+            });
+        }
+    }
+
+    let last = 0;
+    function frame(t) {
+        frameToggle = !frameToggle;
+        if (frameToggle) { raf = requestAnimationFrame(frame); return; } // ~30fps
+        const dt = last ? Math.min(80, t - last) : 32;
+        last = t;
+        ctx.clearRect(0, 0, w, h);
+        for (const m of motes) {
+            m.y -= m.vy * dt;
+            if (m.y < -0.02) { m.y = 1.02; m.x = Math.random(); }
+            const px = m.x * w + Math.sin(t * m.speed + m.phase) * m.amp;
+            ctx.beginPath();
+            ctx.arc(px, m.y * h, m.r, 0, 6.28);
+            ctx.fillStyle = 'rgba(244, 241, 236, ' + m.a + ')';
+            ctx.fill();
+        }
+        raf = requestAnimationFrame(frame);
+    }
+
+    function start() { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } }
+    function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+
+    // Pause everything (dust + the drift animation via .is-off) when the
+    // hero is scrolled out of view.
+    let heroVisible = true;
+    const io = 'IntersectionObserver' in window
+        ? new IntersectionObserver((entries) => {
+            heroVisible = entries[0].isIntersecting;
+            hero.classList.toggle('is-off', !heroVisible);
+            (heroVisible && !document.hidden && !motionOff) ? start() : stop();
+        }, { threshold: 0.05 })
+        : null;
+
+    // Start after first paint settles — keeps the rAF loop out of the
+    // load/entrance window (and out of headless virtual-time traps)
+    setTimeout(() => {
+        size(); seed();
+        if (!document.body.classList.contains('motion-off')) start();
+        if (io) io.observe(hero);
+        window.addEventListener('resize', () => { size(); seed(); });
+        document.addEventListener('visibilitychange', () => {
+            (document.hidden || !heroVisible || motionOff) ? stop() : start();
+        });
+        window.addEventListener('ricey:motion', (e) => {
+            motionOff = e.detail.off;
+            (motionOff || !heroVisible || document.hidden) ? stop() : start();
+        });
+    }, 900);
+})();
+
+
+// -----------------------------------------------
+// Ambient Background Video (music page, desktop)
+// src assigned lazily so mobile never downloads it.
+// -----------------------------------------------
+
+(function () {
+    const video = document.querySelector('.hero-bg-video');
+    if (!video || !video.dataset.src) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(min-width: 769px)').matches) return;
+
+    let motionOff = document.body && document.body.classList.contains('motion-off');
+    let heroVisible = true;
+
+    video.src = video.dataset.src;
+    const tryPlay = () => {
+        if (motionOff || document.hidden || !heroVisible) return;
+        video.play().then(() => video.classList.add('is-on')).catch(() => {});
+    };
+    tryPlay();
+
+    document.addEventListener('visibilitychange', () => {
+        document.hidden ? video.pause() : tryPlay();
+    });
+    window.addEventListener('ricey:motion', (e) => {
+        motionOff = e.detail.off;
+        motionOff ? video.pause() : tryPlay();
+    });
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+            heroVisible = entries[0].isIntersecting;
+            heroVisible ? tryPlay() : video.pause();
+        }, { threshold: 0.05 }).observe(video.closest('.page-hero') || video);
+    }
+})();
+
+
+// -----------------------------------------------
+// Pointer Spotlight — panels are faintly lit where
+// the cursor touches them (fine pointers only).
+// -----------------------------------------------
+
+(function () {
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    const panels = document.querySelectorAll('.service-card, .featured-release, .audio-player, .music-card');
+    panels.forEach((p) => {
+        let raf = null;
+        p.addEventListener('pointermove', (e) => {
+            if (raf) return;
+            const cx = e.clientX, cy = e.clientY;
+            raf = requestAnimationFrame(() => {
+                raf = null;
+                const r = p.getBoundingClientRect();
+                p.style.setProperty('--lx', Math.round(cx - r.left) + 'px');
+                p.style.setProperty('--ly', Math.round(cy - r.top) + 'px');
+            });
+        });
+        p.addEventListener('pointerleave', () => {
+            if (raf) { cancelAnimationFrame(raf); raf = null; }
+            p.style.setProperty('--lx', '-300px');
+            p.style.setProperty('--ly', '-300px');
+        });
+    });
+})();
+
+
+// -----------------------------------------------
 // Hero Title Letter Masks (index only)
 // Splits RICEY into per-letter masked spans for the
 // staggered rise. Skipped under reduced motion / no h1.
@@ -70,6 +375,37 @@
     title.innerHTML = [...text].map((ch, i) =>
         `<span class="char-mask" aria-hidden="true"><span class="char" style="--i:${i}">${ch}</span></span>`
     ).join('');
+})();
+
+
+// -----------------------------------------------
+// Featured Release Canvas Loop (music page)
+// Autoplay only when motion is allowed; poster
+// (the static cover) shows otherwise.
+// -----------------------------------------------
+
+(function () {
+    const video = document.querySelector('.featured-release-art video');
+    if (!video || !video.dataset.src) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Phones keep the static cover (poster) — no 1.6MB loop on cellular
+    if (!window.matchMedia('(min-width: 769px)').matches) return;
+
+    let motionOff = document.body && document.body.classList.contains('motion-off');
+    video.src = video.dataset.src;
+    const tryPlay = () => {
+        if (motionOff || document.hidden) return;
+        video.play().catch(() => {});
+    };
+    tryPlay();
+    // play() is refused in hidden/background tabs — retry when visible
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && video.paused) tryPlay();
+    });
+    window.addEventListener('ricey:motion', (e) => {
+        motionOff = e.detail.off;
+        motionOff ? video.pause() : tryPlay();
+    });
 })();
 
 
@@ -130,6 +466,14 @@ const TRACKS = [
     let waveformSeq = 0;     // guards against stale async decodes
     let hoverRaf = null;     // rAF throttle for ghost-seek redraws
 
+    // Audio-reactive glow state
+    const MOTION_OK = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let audioCtx = null;     // null = not built, false = failed (don't retry)
+    let analyser = null;
+    let freqData = null;
+    let reactiveRaf = null;
+    let pulseLevel = 0;
+
     // Keyboard access for the canvas scrubber
     waveformCanvas.setAttribute('tabindex', '0');
     waveformCanvas.setAttribute('role', 'slider');
@@ -189,7 +533,7 @@ const TRACKS = [
             const y = centerY - barHeight / 2;
 
             ctx.fillStyle = i < playedBars
-                ? '#f4f1ec'
+                ? 'rgba(255, 250, 242, ' + (0.85 + 0.15 * pulseLevel).toFixed(3) + ')'
                 : i < hoverBars
                     ? 'rgba(244, 241, 236, 0.35)'
                     : 'rgba(244, 241, 236, 0.18)';
@@ -338,6 +682,74 @@ const TRACKS = [
         playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     }
 
+    // --- Audio-reactive glow (AnalyserNode drives --pulse while playing) ---
+
+    function initAnalyser() {
+        if (audioCtx !== null) return; // built or permanently failed
+        // file:// is an opaque origin: createMediaElementSource succeeds but
+        // outputs silence (CORS) — never wire the graph there.
+        if (window.location.protocol === 'file:') {
+            audioCtx = false;
+            return;
+        }
+        try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AC();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            analyser.smoothingTimeConstant = 0.82;
+            // Both elements route through one analyser; only one plays at a time.
+            audioCtx.createMediaElementSource(beforeAudio).connect(analyser);
+            audioCtx.createMediaElementSource(afterAudio).connect(analyser);
+            analyser.connect(audioCtx.destination);
+            freqData = new Uint8Array(analyser.frequencyBinCount);
+        } catch {
+            if (audioCtx && audioCtx.close) audioCtx.close().catch(() => {});
+            audioCtx = false; // player still works, just no glow
+            analyser = null;
+        }
+    }
+
+    function reactiveFrame() {
+        const playing = isPlaying && !getActiveAudio().paused;
+        let target = 0;
+        if (playing && analyser) {
+            analyser.getByteFrequencyData(freqData);
+            let sum = 0;
+            const N = 18; // low-mid bins: where the energy of a mix lives
+            for (let i = 1; i <= N; i++) sum += freqData[i];
+            target = Math.min(1, (sum / N / 255) * 1.45);
+        }
+        pulseLevel += (target - pulseLevel) * 0.22;
+        if (!playing && pulseLevel < 0.01) {
+            pulseLevel = 0;
+            playerEl.style.setProperty('--pulse', '0');
+            drawWaveform(currentPeaks, currentProgress());
+            reactiveRaf = null;
+            // No need to keep the OS audio pipeline warm for silence
+            if (audioCtx && audioCtx.suspend) audioCtx.suspend().catch(() => {});
+            return;
+        }
+        playerEl.style.setProperty('--pulse', pulseLevel.toFixed(3));
+        // Only the canvas tracks the pulse per-frame; time text and
+        // aria-valuenow stay on the 4Hz timeupdate handlers.
+        drawWaveform(currentPeaks, currentProgress());
+        reactiveRaf = requestAnimationFrame(reactiveFrame);
+    }
+
+    function currentProgress() {
+        const audio = getActiveAudio();
+        return audio.duration ? audio.currentTime / audio.duration : 0;
+    }
+
+    function startReactive() {
+        if (!MOTION_OK || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        initAnalyser();
+        if (!analyser) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        if (!reactiveRaf) reactiveRaf = requestAnimationFrame(reactiveFrame);
+    }
+
     // Track selector buttons
     trackBtns.forEach((btn, i) => {
         btn.addEventListener('click', () => {
@@ -374,7 +786,10 @@ const TRACKS = [
 
             getActiveAudio().currentTime = currentTime;
             if (wasPlaying) {
-                getActiveAudio().play().catch(() => {});
+                getActiveAudio().play().catch(() => {
+                    isPlaying = false;
+                    setPlayIcon(false);
+                });
             }
 
             // Redraw waveform for the new version
@@ -396,6 +811,7 @@ const TRACKS = [
             audio.play().then(() => {
                 isPlaying = true;
                 setPlayIcon(true);
+                startReactive();
             }).catch((err) => {
                 // AbortError = playback interrupted (e.g. rapid toggle) — not a missing file
                 if (err && err.name === 'AbortError') return;
