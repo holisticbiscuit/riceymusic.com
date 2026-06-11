@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.classList.add('js');(function(){var done=false;var go=function(){if(!done&&document.body){done=true;document.body.classList.add('loaded')}};var arm=function(){requestAnimationFrame(go);setTimeout(go,120)};if(document.readyState!=='loading'){arm()}else{document.addEventListener('readystatechange',function(){if(document.readyState!=='loading')arm()});document.addEventListener('DOMContentLoaded',arm)}})();</script>
+    <script src="script.js" defer></script>
     <title>Music — RICEY</title>
     <meta name="description" content="Music and releases by Ricey.">
     <link rel="stylesheet" href="style.css">
     <link rel="preload" as="image" href="images/music.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 </head>
 <body>
 
@@ -36,7 +38,7 @@
     <section class="page-hero" style="background-image: url('images/music.jpg');">
         <div class="page-hero-overlay"></div>
         <div class="page-content">
-            <h2 class="section-label">Music</h2>
+            <h2 class="section-label" data-index="02">Music</h2>
             <p class="section-intro">Releases and productions.</p>
 
             <div class="featured-release">
@@ -70,6 +72,5 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
 </body>
 </html>

@@ -3,6 +3,77 @@
    ============================================= */
 
 // -----------------------------------------------
+// Page Transitions (black veil; CSS lives behind html.js)
+// Kept first so a failure in any later module can never
+// strand the veil. The inline <head> snippet owns adding
+// body.loaded — this module only handles exits + bfcache.
+// -----------------------------------------------
+
+(function () {
+    const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const HAS_JS_CLASS = document.documentElement.classList.contains('js');
+    let exiting = false;
+
+    // Fade out on internal link click
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        // Respect new-tab/new-window intents (modifier keys, middle click)
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+        // Skip external links, new tabs, mailto, tel, anchors, and javascript:
+        if (link.target === '_blank' ||
+            link.origin !== window.location.origin ||
+            /^(mailto:|tel:|#|javascript:)/.test(href)) return;
+
+        // No veil without the html.js gate (e.g. pages missing the head snippet)
+        if (!HAS_JS_CLASS || REDUCED) return;
+
+        e.preventDefault();
+        if (exiting) return;
+        exiting = true;
+        document.body.classList.add('page-exit');
+        setTimeout(() => {
+            window.location.href = href;
+        }, 300);
+    });
+
+    // bfcache back-button restores the page without rerunning scripts —
+    // re-lift the veil and clear any in-flight exit state.
+    window.addEventListener('pageshow', (e) => {
+        if (e.persisted) {
+            exiting = false;
+            document.body.classList.remove('page-exit');
+            document.body.classList.add('loaded');
+        }
+    });
+})();
+
+
+// -----------------------------------------------
+// Hero Title Letter Masks (index only)
+// Splits RICEY into per-letter masked spans for the
+// staggered rise. Skipped under reduced motion / no h1.
+// -----------------------------------------------
+
+(function () {
+    const title = document.querySelector('.hero-title');
+    if (!title) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const text = title.textContent.trim();
+    title.setAttribute('aria-label', text);
+    title.innerHTML = [...text].map((ch, i) =>
+        `<span class="char-mask" aria-hidden="true"><span class="char" style="--i:${i}">${ch}</span></span>`
+    ).join('');
+})();
+
+
+// -----------------------------------------------
 // TRACKS — Add or remove tracks here
 // -----------------------------------------------
 // Each track needs a name, a before file, and an after file.
@@ -45,8 +116,6 @@ const TRACKS = [
     const toggleBtns = document.querySelectorAll('.toggle-btn');
     const trackBtns = document.querySelectorAll('.track-btn');
     const playBtn = document.querySelector('.play-btn');
-    const iconPlay = document.querySelector('.icon-play');
-    const iconPause = document.querySelector('.icon-pause');
     const waveformCanvas = document.querySelector('.waveform');
     const ctx = waveformCanvas.getContext('2d');
     const timeDisplay = document.querySelector('.time-display');
@@ -57,11 +126,23 @@ const TRACKS = [
     // Waveform data cache: keyed by audio src URL
     const waveformCache = {};
     let currentPeaks = null;
+    let hoverPct = null;     // ghost-seek preview position (0..1) or null
+    let waveformSeq = 0;     // guards against stale async decodes
+    let hoverRaf = null;     // rAF throttle for ghost-seek redraws
 
-    // Set initial volume
+    // Keyboard access for the canvas scrubber
+    waveformCanvas.setAttribute('tabindex', '0');
+    waveformCanvas.setAttribute('role', 'slider');
+    waveformCanvas.setAttribute('aria-label', 'Seek position');
+    waveformCanvas.setAttribute('aria-valuemin', '0');
+    waveformCanvas.setAttribute('aria-valuemax', '100');
+    waveformCanvas.setAttribute('aria-valuenow', '0');
+
+    // Set initial volume + slider fill
     const initialVolume = parseFloat(volumeSlider.value);
     beforeAudio.volume = initialVolume;
     afterAudio.volume = initialVolume;
+    volumeSlider.style.setProperty('--vol', (initialVolume * 100) + '%');
 
     // --- Waveform helpers ---
 
@@ -99,6 +180,7 @@ const TRACKS = [
         const gap = 2;
         const totalBars = peaks.length;
         const playedBars = Math.floor(progress * totalBars);
+        const hoverBars = hoverPct === null ? -1 : Math.floor(hoverPct * totalBars);
         const centerY = h / 2;
 
         for (let i = 0; i < totalBars; i++) {
@@ -107,8 +189,10 @@ const TRACKS = [
             const y = centerY - barHeight / 2;
 
             ctx.fillStyle = i < playedBars
-                ? '#ffffff'
-                : 'rgba(255, 255, 255, 0.15)';
+                ? '#f4f1ec'
+                : i < hoverBars
+                    ? 'rgba(244, 241, 236, 0.35)'
+                    : 'rgba(244, 241, 236, 0.18)';
             ctx.beginPath();
             ctx.roundRect(x, y, barWidth, barHeight, 1);
             ctx.fill();
@@ -149,11 +233,11 @@ const TRACKS = [
         const rect = waveformCanvas.getBoundingClientRect();
         const barCount = Math.floor(rect.width / 5); // barWidth(3) + gap(2)
 
+        let audioCtx = null;
         try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const arrayBuffer = await fetchArrayBuffer(src);
             const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-            audioCtx.close();
 
             const peaks = extractPeaks(audioBuffer, barCount);
             waveformCache[src] = peaks;
@@ -163,15 +247,19 @@ const TRACKS = [
             const peaks = generatePlaceholderPeaks(barCount);
             waveformCache[src] = peaks;
             return peaks;
+        } finally {
+            if (audioCtx) audioCtx.close().catch(() => {});
         }
     }
 
     async function loadWaveform() {
+        const seq = ++waveformSeq;
         resizeCanvas();
         const src = currentVersion === 'before'
             ? TRACKS[currentTrackIndex].before
             : TRACKS[currentTrackIndex].after;
         const peaks = await decodeAndCachePeaks(src);
+        if (seq !== waveformSeq) return; // a newer load superseded this one
         currentPeaks = peaks;
         drawWaveform(peaks, 0);
     }
@@ -198,6 +286,7 @@ const TRACKS = [
         // Update active track button
         trackBtns.forEach((btn, i) => {
             btn.classList.toggle('active', i === index);
+            btn.setAttribute('aria-pressed', String(i === index));
         });
 
         // Update track info box
@@ -241,11 +330,12 @@ const TRACKS = [
         }
         drawWaveform(currentPeaks, progress);
         updateTimeDisplay();
+        waveformCanvas.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
     }
 
     function setPlayIcon(playing) {
-        iconPlay.style.display = playing ? 'none' : 'block';
-        iconPause.style.display = playing ? 'block' : 'none';
+        playBtn.classList.toggle('is-playing', playing);
+        playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     }
 
     // Track selector buttons
@@ -255,6 +345,9 @@ const TRACKS = [
             loadTrack(i);
         });
     });
+
+    // Initial pressed states
+    toggleBtns.forEach(b => b.setAttribute('aria-pressed', String(b.classList.contains('active'))));
 
     // Toggle between before/after
     toggleBtns.forEach(btn => {
@@ -268,8 +361,16 @@ const TRACKS = [
             getActiveAudio().pause();
 
             currentVersion = version;
-            toggleBtns.forEach(b => b.classList.remove('active'));
+            toggleBtns.forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-pressed', 'false');
+            });
             btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
+
+            // Slide the pill indicator
+            const toggleWrap = btn.closest('.player-toggle');
+            if (toggleWrap) toggleWrap.dataset.active = version;
 
             getActiveAudio().currentTime = currentTime;
             if (wasPlaying) {
@@ -295,7 +396,9 @@ const TRACKS = [
             audio.play().then(() => {
                 isPlaying = true;
                 setPlayIcon(true);
-            }).catch(() => {
+            }).catch((err) => {
+                // AbortError = playback interrupted (e.g. rapid toggle) — not a missing file
+                if (err && err.name === 'AbortError') return;
                 alert(
                     'Could not play audio.\n\n' +
                     'Make sure your audio files are in the "audio" folder with the correct names.'
@@ -315,6 +418,40 @@ const TRACKS = [
 
         beforeAudio.currentTime = newTime;
         afterAudio.currentTime = newTime;
+        updateProgress();
+    });
+
+    // Ghost-seek hover preview (rAF-throttled)
+    waveformCanvas.addEventListener('mousemove', (e) => {
+        if (hoverRaf) return;
+        const clientX = e.clientX;
+        hoverRaf = requestAnimationFrame(() => {
+            hoverRaf = null;
+            const rect = waveformCanvas.getBoundingClientRect();
+            const next = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+            if (next === hoverPct) return;
+            hoverPct = next;
+            updateProgress();
+        });
+    });
+
+    waveformCanvas.addEventListener('mouseleave', () => {
+        hoverPct = null;
+        updateProgress();
+    });
+
+    // Keyboard seek on the waveform (arrow keys = ±5s, Home = start)
+    waveformCanvas.addEventListener('keydown', (e) => {
+        const audio = getActiveAudio();
+        if (!audio.duration) return;
+        let next = null;
+        if (e.key === 'ArrowRight') next = Math.min(audio.duration, audio.currentTime + 5);
+        else if (e.key === 'ArrowLeft') next = Math.max(0, audio.currentTime - 5);
+        else if (e.key === 'Home') next = 0;
+        if (next === null) return;
+        e.preventDefault();
+        beforeAudio.currentTime = next;
+        afterAudio.currentTime = next;
         updateProgress();
     });
 
@@ -340,59 +477,29 @@ const TRACKS = [
     beforeAudio.addEventListener('ended', onEnded);
     afterAudio.addEventListener('ended', onEnded);
 
-    // Volume slider
+    // Volume slider (audio + groove fill)
     volumeSlider.addEventListener('input', (e) => {
         const vol = parseFloat(e.target.value);
         beforeAudio.volume = vol;
         afterAudio.volume = vol;
+        e.target.style.setProperty('--vol', (vol * 100) + '%');
     });
 
-    // Redraw waveform on window resize
+    // Redraw waveform on window resize (debounced — decode is expensive)
+    let resizeTimer = null;
     window.addEventListener('resize', () => {
-        // Invalidate cache since bar count depends on width
-        Object.keys(waveformCache).forEach(key => delete waveformCache[key]);
-        loadWaveform().then(() => updateProgress());
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            // Invalidate cache since bar count depends on width
+            Object.keys(waveformCache).forEach(key => delete waveformCache[key]);
+            loadWaveform().then(() => updateProgress());
+        }, 200);
     });
 })();
 
 
 // -----------------------------------------------
-// Page Transitions (fade in / fade out)
-// -----------------------------------------------
-
-(function () {
-    // Fade in on load
-    document.addEventListener('DOMContentLoaded', () => {
-        document.body.classList.add('loaded');
-    });
-
-    // Fade out on internal link click
-    document.addEventListener('click', (e) => {
-        const link = e.target.closest('a');
-        if (!link) return;
-
-        const href = link.getAttribute('href');
-        if (!href) return;
-
-        // Skip external links, new tabs, mailto, tel, anchors, and javascript:
-        if (link.target === '_blank' ||
-            link.origin !== window.location.origin ||
-            href.startsWith('mailto:') ||
-            href.startsWith('tel:') ||
-            href.startsWith('#') ||
-            href.startsWith('javascript:')) return;
-
-        e.preventDefault();
-        document.body.classList.remove('loaded');
-        setTimeout(() => {
-            window.location.href = href;
-        }, 300);
-    });
-})();
-
-
-// -----------------------------------------------
-// Mobile Navigation Toggle
+// Mobile Navigation Toggle (hamburger morphs to X)
 // -----------------------------------------------
 
 (function () {
@@ -400,13 +507,19 @@ const TRACKS = [
     const links = document.querySelector('.nav-links');
 
     if (toggle && links) {
+        toggle.setAttribute('aria-expanded', 'false');
+
         toggle.addEventListener('click', () => {
-            links.classList.toggle('open');
+            const open = links.classList.toggle('open');
+            toggle.classList.toggle('open', open);
+            toggle.setAttribute('aria-expanded', String(open));
         });
 
         links.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 links.classList.remove('open');
+                toggle.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
             });
         });
     }

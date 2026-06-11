@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.classList.add('js');(function(){var done=false;var go=function(){if(!done&&document.body){done=true;document.body.classList.add('loaded')}};var arm=function(){requestAnimationFrame(go);setTimeout(go,120)};if(document.readyState!=='loading'){arm()}else{document.addEventListener('readystatechange',function(){if(document.readyState!=='loading')arm()});document.addEventListener('DOMContentLoaded',arm)}})();</script>
+    <script src="script.js" defer></script>
     <title>Services — RICEY</title>
     <meta name="description" content="Mixing and mastering services by Ricey.">
     <link rel="icon" type="image/jpeg" href="images/hero.jpg">
@@ -18,8 +20,8 @@
     <link rel="preload" as="image" href="images/services.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 </head>
 <body>
 
@@ -45,8 +47,8 @@
     <section class="page-hero" style="background-image: url('images/services.jpg');">
         <div class="page-hero-overlay"></div>
         <div class="page-content">
-            <h2 class="section-label">Mastering</h2>
-            <p class="section-intro">Professional audio engineering to bring your music to life.</p>
+            <h2 class="section-label" data-index="03">Mastering</h2>
+            <p class="section-intro">Professional audio engineering to bring your music <em>to life</em>.</p>
 
             <p class="credits-list">Sony Music &middot; Columbia Records &middot; Polydor Records &middot; Virgin Music &middot; Universal Music Group &middot; The Orchard</p>
 
@@ -82,7 +84,7 @@
                     </div>
 
                     <!-- Before / After toggle -->
-                    <div class="player-toggle">
+                    <div class="player-toggle" data-active="before">
                         <button class="toggle-btn active" data-track="before">BEFORE</button>
                         <button class="toggle-btn" data-track="after">AFTER</button>
                     </div>
@@ -92,7 +94,7 @@
                             <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
                                 <polygon points="5,3 19,12 5,21"></polygon>
                             </svg>
-                            <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="display:none;">
+                            <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
                                 <rect x="6" y="4" width="4" height="16"></rect>
                                 <rect x="14" y="4" width="4" height="16"></rect>
                             </svg>
@@ -128,6 +130,5 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
 </body>
 </html>
