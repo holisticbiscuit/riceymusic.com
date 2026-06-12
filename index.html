@@ -6,11 +6,11 @@
     <script>document.documentElement.classList.add('js');(function(){var done=false;var go=function(){if(!done&&document.body){done=true;document.body.classList.add('loaded')}};var arm=function(){requestAnimationFrame(go);setTimeout(go,120)};if(document.readyState!=='loading'){arm()}else{document.addEventListener('readystatechange',function(){if(document.readyState!=='loading')arm()});document.addEventListener('DOMContentLoaded',arm)}})();</script>
     <script src="script.js" defer></script>
     <title>RICEY — Electronic Music Artist</title>
-    <meta name="description" content="Ricey — Electronic music artist, mixing and mastering engineer.">
+    <meta name="description" content="Ricey — Electronic music artist, mixing and mastering engineer. New single Years out now on mau5trap.">
     <link rel="icon" type="image/png" href="images/favicon-64.png">
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <meta property="og:title" content="RICEY — Electronic Music Artist">
-    <meta property="og:description" content="Electronic music artist, mixing and mastering engineer.">
+    <meta property="og:description" content="Electronic music artist, mixing and mastering engineer. New single Years out now on mau5trap.">
     <meta property="og:image" content="https://riceymusic.com/images/og-card.jpg">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
@@ -29,12 +29,12 @@
     <!-- Navigation -->
     <nav id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">RICEY</a>
+            <a href="#home" class="nav-logo">RICEY</a>
             <div class="nav-links">
-                <a href="about.html">About</a>
-                <a href="music.html">Music</a>
-                <a href="services.html">Services</a>
-                <a href="contact.html" class="nav-cta">Get In Touch</a>
+                <a href="#about">About</a>
+                <a href="#music">Music</a>
+                <a href="#services">Services</a>
+                <a href="#contact" class="nav-cta">Get In Touch</a>
             </div>
             <button class="nav-toggle" aria-label="Toggle menu">
                 <span></span>
@@ -44,24 +44,186 @@
         </div>
     </nav>
 
-    <!-- Hero -->
-    <section class="page-hero" style="background-image: url('images/hero.webp');">
-        <div class="page-hero-overlay"></div>
-        <div class="page-hero-content">
-            <div class="hero-badge"><span class="badge-dot"></span>Newly signed &middot; <strong>mau5trap</strong></div>
-            <h1 class="hero-title">RICEY</h1>
-            <p class="hero-subtitle">Artist &amp; Audio Engineer</p>
-            <div class="hero-line"></div>
-            <p class="hero-release">New single <em>&ldquo;Years&rdquo;</em>, out now on mau5trap</p>
-            <div class="hero-links">
-                <a href="https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c" class="btn-primary btn-icon" target="_blank" rel="noopener">
-                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.59 14.42a.62.62 0 0 1-.86.21c-2.35-1.44-5.3-1.76-8.79-.96a.625.625 0 1 1-.28-1.22c3.81-.87 7.08-.5 9.72 1.11.3.18.39.57.21.86zm1.22-2.72a.78.78 0 0 1-1.07.26c-2.69-1.65-6.79-2.13-9.97-1.17a.78.78 0 1 1-.45-1.49c3.63-1.1 8.15-.57 11.24 1.33.37.22.49.7.25 1.07zm.11-2.84C14.7 8.99 9.39 8.82 6.35 9.74a.936.936 0 1 1-.54-1.79c3.49-1.06 9.35-.85 13.04 1.34.44.26.59.83.33 1.28-.26.44-.83.59-1.28.33z"/></svg>
-                    Listen on Spotify
-                </a>
-                <a href="services.html" class="btn-secondary">Services</a>
-            </div>
+    <!-- Background stage: scenes crossfade here while content scrolls over it -->
+    <div class="stage" aria-hidden="true">
+        <div class="stage-layer" data-scene="home" style="background-image: url('images/hero.webp');"></div>
+        <div class="stage-layer" data-scene="about" data-bg="images/about.webp"></div>
+        <div class="stage-layer" data-scene="music" data-bg="images/music.webp">
+            <video class="hero-bg-video" data-src="images/years-canvas-bg.mp4" muted loop playsinline preload="none" aria-hidden="true"></video>
         </div>
-    </section>
+        <div class="stage-layer" data-scene="services" data-bg="images/services.webp"></div>
+        <div class="stage-layer" data-scene="contact" data-bg="images/contact.webp"></div>
+        <div class="stage-dim"></div>
+        <div class="stage-vignette"></div>
+    </div>
+
+    <main>
+        <!-- Home -->
+        <section class="scene scene-home" id="home">
+            <div class="scene-content scene-center">
+                <div class="hero-badge"><span class="badge-dot"></span>Newly signed &middot; <strong>mau5trap</strong></div>
+                <h1 class="hero-title">RICEY</h1>
+                <p class="hero-subtitle">Artist &amp; Audio Engineer</p>
+                <div class="hero-line"></div>
+                <p class="hero-release">New single <em>&ldquo;Years&rdquo;</em>, out now on mau5trap</p>
+                <div class="hero-links">
+                    <a href="https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c" class="btn-primary btn-icon" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.59 14.42a.62.62 0 0 1-.86.21c-2.35-1.44-5.3-1.76-8.79-.96a.625.625 0 1 1-.28-1.22c3.81-.87 7.08-.5 9.72 1.11.3.18.39.57.21.86zm1.22-2.72a.78.78 0 0 1-1.07.26c-2.69-1.65-6.79-2.13-9.97-1.17a.78.78 0 1 1-.45-1.49c3.63-1.1 8.15-.57 11.24 1.33.37.22.49.7.25 1.07zm.11-2.84C14.7 8.99 9.39 8.82 6.35 9.74a.936.936 0 1 1-.54-1.79c3.49-1.06 9.35-.85 13.04 1.34.44.26.59.83.33 1.28-.26.44-.83.59-1.28.33z"/></svg>
+                        Listen on Spotify
+                    </a>
+                    <a href="#services" class="btn-secondary">Services</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- About -->
+        <section class="scene" id="about" data-reveal>
+            <div class="scene-content">
+                <h2 class="section-label" data-index="01">About</h2>
+                <div class="about-text">
+                    <p>
+                        Ricey is a techno and progressive artist and audio engineer. What
+                        started as a last resort, picking music after failing another
+                        subject at school, quickly became something far deeper. What was
+                        meant to be a backup plan turned into <em>an obsession with sound</em>.
+                    </p>
+                    <p>
+                        Now dedicated to crafting dark, immersive soundscapes that sit in the
+                        space <em>between thought and feeling</em>. On the engineering side, the
+                        philosophy is simple, truly enhance an artist's vision. Every mix
+                        and master is treated with the same precision and care, whether it's
+                        his own work or someone else's.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Music -->
+        <section class="scene" id="music" data-reveal>
+            <div class="scene-content">
+                <h2 class="section-label" data-index="02">Music</h2>
+                <p class="section-intro">Releases and productions.</p>
+
+                <div class="featured-release">
+                    <div class="featured-release-art">
+                        <video data-src="images/years-canvas.mp4" poster="images/years.jpg" muted loop playsinline preload="none" aria-label="Years cover art animation"></video>
+                    </div>
+                    <div class="featured-release-info">
+                        <span class="featured-release-label"><span class="badge-dot"></span>Out now on mau5trap</span>
+                        <h3 class="featured-release-title">Years</h3>
+                        <span class="featured-release-meta">mau5trap &middot; 2026 &middot; Single</span>
+                        <p class="featured-release-desc">
+                            Ricey's debut single on mau5trap. Progressive house. Personal.
+                            About time passing and everything you carry with you when it does.
+                        </p>
+                        <a href="https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c" class="btn-primary btn-icon" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.59 14.42a.62.62 0 0 1-.86.21c-2.35-1.44-5.3-1.76-8.79-.96a.625.625 0 1 1-.28-1.22c3.81-.87 7.08-.5 9.72 1.11.3.18.39.57.21.86zm1.22-2.72a.78.78 0 0 1-1.07.26c-2.69-1.65-6.79-2.13-9.97-1.17a.78.78 0 1 1-.45-1.49c3.63-1.1 8.15-.57 11.24 1.33.37.22.49.7.25 1.07zm.11-2.84C14.7 8.99 9.39 8.82 6.35 9.74a.936.936 0 1 1-.54-1.79c3.49-1.06 9.35-.85 13.04 1.34.44.26.59.83.33 1.28-.26.44-.83.59-1.28.33z"/></svg>
+                            Listen on Spotify
+                        </a>
+                    </div>
+                </div>
+
+                <div class="spotify-embed">
+                    <iframe src="https://open.spotify.com/embed/track/6IcqC8WxfxqSkZU4AEIV3c?utm_source=generator&amp;theme=0" width="100%" height="80" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Years by Ricey on Spotify"></iframe>
+                </div>
+
+                <p class="music-note">More music coming soon.</p>
+            </div>
+        </section>
+
+        <!-- Services -->
+        <section class="scene" id="services" data-reveal>
+            <div class="scene-content">
+                <h2 class="section-label" data-index="03">Mastering</h2>
+                <p class="section-intro">Mastering, from the artist behind <em>Years</em>.</p>
+
+                <p class="credits-list">Sony Music &middot; Columbia Records &middot; Polydor Records &middot; Virgin Music &middot; Universal Music Group &middot; The Orchard</p>
+
+                <div class="rate-list">
+                    <div class="rate-row">
+                        <h3 class="rate-name">Mastering</h3>
+                        <p class="rate-desc">A single track, finished for release. Loud where it should be, clear everywhere it plays.</p>
+                        <span class="rate-price">&pound;50 / track</span>
+                    </div>
+                    <div class="rate-row">
+                        <h3 class="rate-name">Stem Mastering</h3>
+                        <p class="rate-desc">The same finish, working from grouped stems. More room to move when the mix calls for it.</p>
+                        <span class="rate-price">&pound;50 + &pound;10 / stem</span>
+                    </div>
+                </div>
+
+                <!-- Before / After Audio Comparison -->
+                <div class="audio-comparison">
+                    <h3 class="comparison-title">Hear the difference.</h3>
+                    <p class="comparison-subtitle">One track, two states. Switch while it plays.</p>
+
+                    <div class="audio-player">
+                        <!-- Track selector -->
+                        <div class="track-selector">
+                            <button class="track-btn active">Track 1</button>
+                            <button class="track-btn">Track 2</button>
+                        </div>
+
+                        <!-- Before / After toggle -->
+                        <div class="player-toggle" data-active="before">
+                            <button class="toggle-btn active" data-track="before">BEFORE</button>
+                            <button class="toggle-btn" data-track="after">AFTER</button>
+                        </div>
+
+                        <div class="player-controls">
+                            <button class="play-btn" aria-label="Play">
+                                <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                    <polygon points="5,3 19,12 5,21"></polygon>
+                                </svg>
+                                <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                </svg>
+                            </button>
+
+                            <canvas class="waveform" height="48"></canvas>
+
+                            <span class="time-display">0:00 / 0:00</span>
+                        </div>
+
+                        <div class="player-bottom">
+                            <div class="track-info">
+                                <span class="track-info-title"></span>
+                                <span class="track-info-artist"></span>
+                            </div>
+                            <div class="volume-control">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.47 4.47 0 0 0 2.5-3.5z"/>
+                                </svg>
+                                <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="0.8">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section class="scene" id="contact" data-reveal>
+            <div class="scene-content">
+                <h2 class="section-label" data-index="04">Get in touch</h2>
+                <p class="section-intro">Interested in working together? <em>Let&rsquo;s talk.</em></p>
+
+                <div class="contact-grid">
+                    <div class="contact-method">
+                        <span class="contact-label">Email</span>
+                        <a href="mailto:contact@riceymusic.com" class="contact-link">contact@riceymusic.com</a>
+                    </div>
+                    <div class="contact-method">
+                        <span class="contact-label">Socials</span>
+                        <div class="contact-socials">
+                            <a href="https://www.instagram.com/riceymusic/" class="contact-link" target="_blank" rel="noopener">Instagram</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <!-- Footer -->
     <footer>

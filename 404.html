@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>document.documentElement.classList.add('js');(function(){var done=false;var go=function(){if(!done&&document.body){done=true;document.body.classList.add('loaded')}};var arm=function(){requestAnimationFrame(go);setTimeout(go,120)};if(document.readyState!=='loading'){arm()}else{document.addEventListener('readystatechange',function(){if(document.readyState!=='loading')arm()});document.addEventListener('DOMContentLoaded',arm)}})();</script>
-    <script src="script.js" defer></script>
+    <script src="/script.js" defer></script>
     <title>404 — RICEY</title>
     <meta name="robots" content="noindex">
-    <link rel="icon" type="image/png" href="images/favicon-64.png">
-    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-    <link rel="stylesheet" href="style.css">
-    <link rel="preload" as="image" href="images/hero.webp">
+    <link rel="icon" type="image/png" href="/images/favicon-64.png">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preload" as="image" href="/images/hero.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -21,12 +21,12 @@
     <!-- Navigation -->
     <nav id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">RICEY</a>
+            <a href="/" class="nav-logo">RICEY</a>
             <div class="nav-links">
-                <a href="about.html">About</a>
-                <a href="music.html">Music</a>
-                <a href="services.html">Services</a>
-                <a href="contact.html" class="nav-cta">Get In Touch</a>
+                <a href="/#about">About</a>
+                <a href="/#music">Music</a>
+                <a href="/#services">Services</a>
+                <a href="/#contact" class="nav-cta">Get In Touch</a>
             </div>
             <button class="nav-toggle" aria-label="Toggle menu">
                 <span></span>
@@ -37,15 +37,15 @@
     </nav>
 
     <!-- 404 -->
-    <section class="page-hero" style="background-image: url('images/hero.webp');">
+    <section class="page-hero" style="background-image: url('/images/hero.webp');">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
             <span class="error-code">404</span>
             <h1 class="error-title">Lost in the noise.</h1>
             <p class="error-copy">This page doesn&rsquo;t exist, or it moved. The music is still where you left it.</p>
             <div class="hero-links">
-                <a href="index.html" class="btn-primary">Back home</a>
-                <a href="music.html" class="btn-secondary">Music</a>
+                <a href="/" class="btn-primary">Back home</a>
+                <a href="/#music" class="btn-secondary">Music</a>
             </div>
         </div>
     </section>

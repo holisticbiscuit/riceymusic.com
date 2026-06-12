@@ -126,10 +126,11 @@
 
     function apply(persist) {
         document.body.classList.toggle('motion-off', off);
-        document.querySelectorAll('video').forEach((v) => {
-            if (off) v.pause();
-            else if (v.currentSrc) v.play().catch(() => {});
-        });
+        if (off) {
+            document.querySelectorAll('video').forEach((v) => v.pause());
+        }
+        // Resume is delegated to each video module's ricey:motion listener —
+        // they know whether their video is lit / on screen.
         btn.textContent = off ? 'Play motion' : 'Pause motion';
         btn.setAttribute('aria-pressed', String(off));
         window.dispatchEvent(new CustomEvent('ricey:motion', { detail: { off } }));
@@ -169,17 +170,17 @@
 (function () {
     if (!window.matchMedia('(pointer: fine)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const hero = document.querySelector('.page-hero');
-    if (!hero) return;
+    const target = document.querySelector('.stage');
+    if (!target) return;
 
-    const MAX = 8; // px — must stay inside the photo layer's 1.03 scale margin (1.2% of height at the drift trough)
+    const MAX = 8; // px — must stay inside the stage's 1.015 scale margin at the drift trough
     let tx = 0, ty = 0, x = 0, y = 0, raf = null;
 
     function loop() {
         x += (tx - x) * 0.06;
         y += (ty - y) * 0.06;
-        hero.style.setProperty('--par-x', x.toFixed(2) + 'px');
-        hero.style.setProperty('--par-y', y.toFixed(2) + 'px');
+        target.style.setProperty('--par-x', x.toFixed(2) + 'px');
+        target.style.setProperty('--par-y', y.toFixed(2) + 'px');
         raf = (Math.abs(tx - x) > 0.05 || Math.abs(ty - y) > 0.05)
             ? requestAnimationFrame(loop) : null;
     }
@@ -193,6 +194,232 @@
 
 
 // -----------------------------------------------
+// Scene Morph — the heart of the single-page site.
+// Each fixed stage layer crossfades and settles to
+// scale as its scene crosses the viewport center.
+// Scroll-linked, so it scrubs in both directions.
+// -----------------------------------------------
+
+(function () {
+    const sceneEls = [...document.querySelectorAll('.scene')];
+    const stage = document.querySelector('.stage');
+    if (!sceneEls.length || !stage) return;
+
+    const layers = {};
+    stage.querySelectorAll('.stage-layer').forEach((l) => { layers[l.dataset.scene] = l; });
+    const dim = stage.querySelector('.stage-dim');
+    const bgVideo = stage.querySelector('video');
+    const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (bgVideo) bgVideo.dataset.lit = '0'; // dark until its scene scrolls in
+
+    // Smoothed per-scene state: targets follow scroll, currents glide after
+    // them — the inertia is what makes the scrub feel filmed, not stepped.
+    const st = sceneEls.map((el) => ({
+        el,
+        layer: layers[el.id] || null,
+        content: el.querySelector('.scene-content'),
+        o: 0, oT: 0,        // layer opacity (current / target)
+        sh: 0, shT: 0,      // content drift -1..1 (current / target)
+        dir: 1
+    }));
+
+    let videoLit = false;
+    let raf = null;
+
+    function computeTargets() {
+        const vh = window.innerHeight || 1;
+        const vc = vh / 2;
+        st.forEach((it, idx) => {
+            const r = it.el.getBoundingClientRect();
+            let center = r.top + r.height / 2;
+            // Nothing follows the last scene — never dim it once passed
+            if (idx === st.length - 1 && center < vc) center = vc;
+            const signed = center - vc;
+            // Center *band*: tall scenes hold while you scroll inside them
+            const overflow = Math.max(0, (r.height - vh) / 2);
+            const d = Math.max(0, Math.abs(signed) - overflow);
+            const t = Math.max(0, 1 - d / (vh * 0.9));
+            it.oT = t * t * (3 - 2 * t); // smoothstep
+            it.shT = Math.max(-1, Math.min(1, signed / vh));
+        });
+    }
+
+    function applyScene(it) {
+        if (it.layer) {
+            it.layer.style.opacity = it.o.toFixed(3);
+            if (!REDUCED) {
+                // Departing scenes push past the camera (up to 14%); arriving
+                // ones settle down into place (7%) — a dolly, not a dissolve.
+                // Blend the push amount through the smoothed drift sign so the
+                // crossing never steps, even on fast wheel flings.
+                const blend = Math.max(-1, Math.min(1, it.sh * 6));
+                const amt = 0.105 - 0.035 * blend;
+                it.layer.style.transform = 'scale(' + (1 + amt * (1 - it.o)).toFixed(4) + ')';
+            }
+        }
+        if (it.content && !REDUCED) {
+            // Content travels with the handoff and dies into it. At rest the
+            // inline styles are cleared — opacity < 1 on this container would
+            // create a backdrop root and kill the glass panels inside it.
+            const sh = Math.abs(it.sh) < 0.001 ? 0 : it.sh;
+            it.content.style.transform = sh === 0 ? '' : 'translateY(' + (sh * 70).toFixed(1) + 'px)';
+            const co = Math.min(1, it.o * 1.2);
+            it.content.style.opacity = co >= 0.999 ? '' : co.toFixed(3);
+            // Faded scenes shouldn't be tabbable or clickable
+            it.content.style.visibility = it.o < 0.02 ? 'hidden' : '';
+            it.content.style.pointerEvents = it.o < 0.15 ? 'none' : '';
+        }
+    }
+
+    function syncVideo() {
+        if (!bgVideo) return;
+        const it = st.find((x) => x.layer && x.layer.contains(bgVideo));
+        if (!it) return;
+        const want = it.o > 0.04;
+        if (want === videoLit) return;
+        videoLit = want;
+        bgVideo.dataset.lit = want ? '1' : '0';
+        if (!want) {
+            bgVideo.pause();
+        } else if (bgVideo.currentSrc &&
+                   !document.hidden &&
+                   !document.body.classList.contains('motion-off')) {
+            bgVideo.play().then(() => bgVideo.classList.add('is-on')).catch(() => {});
+        }
+    }
+
+    function tick() {
+        let busy = false;
+        let maxO = 0;
+        const k = REDUCED ? 1 : 0.16;
+        st.forEach((it) => {
+            it.o += (it.oT - it.o) * k;
+            it.sh += (it.shT - it.sh) * k;
+            if (Math.abs(it.oT - it.o) > 0.002 || Math.abs(it.shT - it.sh) > 0.002) {
+                busy = true;
+            } else {
+                it.o = it.oT;
+                it.sh = it.shT;
+            }
+            applyScene(it);
+            if (it.o > maxO) maxO = it.o;
+        });
+        // The breath between scenes: the stage dips toward black mid-handoff
+        if (dim) dim.style.opacity = ((1 - maxO) * 0.45).toFixed(3);
+        syncVideo();
+        raf = busy ? requestAnimationFrame(tick) : null;
+    }
+
+    function kick() {
+        computeTargets();
+        if (!raf) raf = requestAnimationFrame(tick);
+    }
+
+    window.addEventListener('scroll', kick, { passive: true });
+    window.addEventListener('resize', kick);
+    // Background-tab loads can compute against a zero-height viewport —
+    // re-derive everything the moment the page becomes visible
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) kick();
+    });
+
+    // Initial state lands instantly — no glide on load
+    computeTargets();
+    st.forEach((it) => { it.o = it.oT; it.sh = it.shT; applyScene(it); });
+    if (dim) dim.style.opacity = ((1 - Math.max(...st.map((x) => x.o))) * 0.45).toFixed(3);
+    syncVideo();
+
+    // Backgrounds: a layer that is lit RIGHT NOW (fragment entry via the old
+    // page URLs) loads immediately; the rest load just after first paint to
+    // stay off the critical path.
+    const assignBg = (l) => {
+        if (l.dataset.bg && !l.style.backgroundImage) {
+            l.style.backgroundImage = "url('" + l.dataset.bg + "')";
+        }
+    };
+    st.forEach((it) => { if (it.layer && it.oT > 0.01) assignBg(it.layer); });
+    setTimeout(() => {
+        stage.querySelectorAll('.stage-layer[data-bg]').forEach(assignBg);
+    }, 350);
+})();
+
+
+// -----------------------------------------------
+// Smooth anchor scrolling — enabled only after the
+// initial fragment jump has already happened
+// -----------------------------------------------
+
+(function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    setTimeout(() => {
+        document.documentElement.style.scrollBehavior = 'smooth';
+    }, 300);
+})();
+
+
+// -----------------------------------------------
+// Scroll Spy — nav reflects the scene in view
+// -----------------------------------------------
+
+(function () {
+    const links = [...document.querySelectorAll('.nav-links a[href^="#"]')];
+    if (!links.length || !('IntersectionObserver' in window)) return;
+
+    const map = {};
+    links.forEach((a) => {
+        const s = document.getElementById(a.getAttribute('href').slice(1));
+        if (s) map[s.id] = a;
+    });
+
+    const spy = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            links.forEach((a) => {
+                a.classList.remove('active');
+                a.removeAttribute('aria-current');
+            });
+            const a = map[e.target.id];
+            if (a && !a.classList.contains('nav-cta')) {
+                a.classList.add('active');
+                a.setAttribute('aria-current', 'true');
+            }
+        });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+
+    // Observe every scene — entering an unmapped one (home) clears the highlight
+    document.querySelectorAll('.scene').forEach((s) => spy.observe(s));
+})();
+
+
+// -----------------------------------------------
+// Scene Reveals — content rises as each scene
+// first scrolls into view
+// -----------------------------------------------
+
+(function () {
+    const scenes = document.querySelectorAll('.scene[data-reveal]');
+    if (!scenes.length) return;
+
+    if (!('IntersectionObserver' in window) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        scenes.forEach((s) => s.classList.add('in-view'));
+        return;
+    }
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            e.target.classList.add('in-view');
+            io.unobserve(e.target);
+        });
+    }, { threshold: 0.18 });
+
+    scenes.forEach((s) => io.observe(s));
+})();
+
+
+// -----------------------------------------------
 // Film Dust (desktop, motion-OK) — slow motes over
 // the hero photo, dimmed by the overlay above them.
 // -----------------------------------------------
@@ -200,14 +427,19 @@
 (function () {
     if (!window.matchMedia('(pointer: fine) and (min-width: 769px)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Single-page stage (index) or standalone hero (404) — dust either way
+    const stage = document.querySelector('.stage');
     const hero = document.querySelector('.page-hero');
-    const overlay = hero && hero.querySelector('.page-hero-overlay');
-    if (!hero || !overlay) return;
+    const host = stage || hero;
+    const before = stage
+        ? stage.querySelector('.stage-vignette')
+        : hero && hero.querySelector('.page-hero-overlay');
+    if (!host || !before) return;
 
     const canvas = document.createElement('canvas');
     canvas.className = 'dust-canvas';
     canvas.setAttribute('aria-hidden', 'true');
-    hero.insertBefore(canvas, overlay);
+    host.insertBefore(canvas, before);
     const ctx = canvas.getContext('2d');
 
     let w = 0, h = 0, raf = null, motionOff = false;
@@ -218,7 +450,7 @@
     const motes = [];
 
     function size() {
-        const r = hero.getBoundingClientRect();
+        const r = host.getBoundingClientRect();
         w = r.width; h = r.height;
         canvas.width = w * DPR;
         canvas.height = h * DPR;
@@ -264,13 +496,13 @@
     function start() { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } }
     function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
-    // Pause everything (dust + the drift animation via .is-off) when the
-    // hero is scrolled out of view.
+    // Pause dust (and the legacy drift via .is-off) when the host scrolls
+    // out of view — a fixed stage never does; a 404 hero can.
     let heroVisible = true;
     const io = 'IntersectionObserver' in window
         ? new IntersectionObserver((entries) => {
             heroVisible = entries[0].isIntersecting;
-            hero.classList.toggle('is-off', !heroVisible);
+            host.classList.toggle('is-off', !heroVisible);
             (heroVisible && !document.hidden && !motionOff) ? start() : stop();
         }, { threshold: 0.05 })
         : null;
@@ -280,7 +512,7 @@
     setTimeout(() => {
         size(); seed();
         if (!document.body.classList.contains('motion-off')) start();
-        if (io) io.observe(hero);
+        if (io) io.observe(host);
         window.addEventListener('resize', () => { size(); seed(); });
         document.addEventListener('visibilitychange', () => {
             (document.hidden || !heroVisible || motionOff) ? stop() : start();
@@ -305,13 +537,18 @@
     if (!window.matchMedia('(min-width: 769px)').matches) return;
 
     let motionOff = document.body && document.body.classList.contains('motion-off');
-    let heroVisible = true;
 
-    video.src = video.dataset.src;
+    // The morph module marks the video's layer lit/unlit via data-lit and
+    // owns the play/pause that follows scroll; this module owns src
+    // assignment plus the visibility/motion-preference gates.
+    const lit = () => video.dataset.lit !== '0'; // default lit for the 404/standalone case
     const tryPlay = () => {
-        if (motionOff || document.hidden || !heroVisible) return;
+        if (motionOff || document.hidden || !lit()) return;
         video.play().then(() => video.classList.add('is-on')).catch(() => {});
     };
+    video.src = video.dataset.src;
+    // Heal the load-order race: if the morph already lit this layer
+    // (e.g. the page loaded scrolled to #music), start now.
     tryPlay();
 
     document.addEventListener('visibilitychange', () => {
@@ -321,12 +558,6 @@
         motionOff = e.detail.off;
         motionOff ? video.pause() : tryPlay();
     });
-    if ('IntersectionObserver' in window) {
-        new IntersectionObserver((entries) => {
-            heroVisible = entries[0].isIntersecting;
-            heroVisible ? tryPlay() : video.pause();
-        }, { threshold: 0.05 }).observe(video.closest('.page-hero') || video);
-    }
 })();
 
 
@@ -392,12 +623,22 @@
     if (!window.matchMedia('(min-width: 769px)').matches) return;
 
     let motionOff = document.body && document.body.classList.contains('motion-off');
+    let inView = false;
     video.src = video.dataset.src;
     const tryPlay = () => {
-        if (motionOff || document.hidden) return;
+        if (motionOff || document.hidden || !inView) return;
         video.play().catch(() => {});
     };
-    tryPlay();
+    // Only loop while its card is actually on screen
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+            inView = entries[0].isIntersecting;
+            inView ? tryPlay() : video.pause();
+        }, { threshold: 0.1 }).observe(video);
+    } else {
+        inView = true;
+        tryPlay();
+    }
     // play() is refused in hidden/background tabs — retry when visible
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden && video.paused) tryPlay();
@@ -463,6 +704,9 @@ const TRACKS = [
     const waveformCache = {};
     let currentPeaks = null;
     let hoverPct = null;     // ghost-seek preview position (0..1) or null
+    // Real peak data costs a full MP3 fetch + PCM decode — don't pay it at
+    // page load; arm when the player scrolls into view (or on first play).
+    let audioArmed = false;
     let waveformSeq = 0;     // guards against stale async decodes
     let hoverRaf = null;     // rAF throttle for ghost-seek redraws
 
@@ -577,6 +821,10 @@ const TRACKS = [
         const rect = waveformCanvas.getBoundingClientRect();
         const barCount = Math.floor(rect.width / 5); // barWidth(3) + gap(2)
 
+        // Not armed yet: placeholder shape, deliberately NOT cached so the
+        // real decode happens once the player is actually in view
+        if (!audioArmed) return generatePlaceholderPeaks(barCount);
+
         let audioCtx = null;
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -643,6 +891,25 @@ const TRACKS = [
 
     // Load the first track
     loadTrack(0);
+
+    // Arm the real waveform decode when the player approaches the viewport
+    function armAudio() {
+        if (audioArmed) return;
+        audioArmed = true;
+        loadWaveform().then(() => updateProgress());
+    }
+
+    if ('IntersectionObserver' in window) {
+        const armIO = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                armAudio();
+                armIO.disconnect();
+            }
+        }, { rootMargin: '50% 0px' });
+        armIO.observe(playerEl);
+    } else {
+        armAudio();
+    }
 
     // Silence load errors (handled on play)
     beforeAudio.addEventListener('error', () => {});
@@ -801,6 +1068,7 @@ const TRACKS = [
 
     // Play / Pause
     playBtn.addEventListener('click', () => {
+        armAudio(); // belt-and-braces if IO never fired
         const audio = getActiveAudio();
 
         if (isPlaying) {

@@ -52,6 +52,9 @@
     box-sizing: border-box;
 }
 
+/* scroll-behavior: smooth is enabled by JS after load — a CSS default would
+   also animate the initial #fragment jump, scrolling new visitors through
+   every scene before they start. */
 html {
     font-size: 16px;
     scrollbar-width: thin;
@@ -170,11 +173,131 @@ html.js body.page-exit::before {
     transition: opacity 260ms var(--ease-exit);
 }
 
+/* !important: the morph module writes inline opacity/transform on
+   .scene-content — the exit must outrank it for the 300ms departure */
 html.js body.page-exit .page-hero-content,
-html.js body.page-exit .page-content {
-    opacity: 0;
-    transform: translateY(-14px);
+html.js body.page-exit .page-content,
+html.js body.page-exit .scene-content {
+    opacity: 0 !important;
+    transform: translateY(-14px) !important;
     transition: opacity 260ms var(--ease-exit), transform 260ms var(--ease-exit);
+}
+
+
+/* --- Scene Stage (single-page morph) ---
+   Fixed full-viewport layer deck. The morph module drives each layer's
+   opacity/scale from scroll position; content scenes scroll above it. */
+
+.stage {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+}
+
+.stage-layer {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Hidden state is JS-gated: without JS only the home layer carries a
+   background, so non-JS visitors keep the hero photo on every scene */
+html.js .stage-layer {
+    opacity: 0;
+    transform: scale(1.045);
+}
+
+.stage-layer video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-lux);
+}
+
+.stage-layer video.is-on {
+    opacity: 1;
+}
+
+/* The breath between scenes — opacity driven by the morph module */
+.stage-dim {
+    position: absolute;
+    inset: 0;
+    background: #0a0a0a;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* One cinematic grade over whichever layers are lit */
+.stage-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(100deg,
+            rgba(10, 10, 10, 0.55) 0%,
+            rgba(10, 10, 10, 0.26) 48%,
+            rgba(10, 10, 10, 0.08) 75%),
+        linear-gradient(to bottom,
+            rgba(10, 10, 10, 0.72) 0%,
+            rgba(10, 10, 10, 0.26) 24%,
+            rgba(10, 10, 10, 0.3) 60%,
+            rgba(10, 10, 10, 0.88) 100%),
+        radial-gradient(ellipse 140% 100% at 55% 38%,
+            rgba(0, 0, 0, 0.1) 0%,
+            rgba(0, 0, 0, 0.42) 62%,
+            rgba(0, 0, 0, 0.76) 100%);
+}
+
+main {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.scene {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.scene-content {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 8rem 2rem 5rem;
+}
+
+.scene-center {
+    text-align: center;
+}
+
+.scene-center .hero-links {
+    justify-content: center;
+}
+
+/* Scene content reveals as each scene scrolls in (home keeps its own
+   load choreography; only [data-reveal] scenes use this) */
+@media (prefers-reduced-motion: no-preference) {
+    html.js .scene[data-reveal] .scene-content > * {
+        opacity: 0;
+        transform: translateY(26px);
+        transition: opacity 800ms var(--ease-lux), transform 800ms var(--ease-lux);
+    }
+
+    html.js .scene[data-reveal].in-view .scene-content > * {
+        opacity: 1;
+        transform: none;
+    }
+
+    html.js .scene[data-reveal] .scene-content > *:nth-child(1) { transition-delay: 60ms; }
+    html.js .scene[data-reveal] .scene-content > *:nth-child(2) { transition-delay: 140ms; }
+    html.js .scene[data-reveal] .scene-content > *:nth-child(3) { transition-delay: 220ms; }
+    html.js .scene[data-reveal] .scene-content > *:nth-child(4) { transition-delay: 300ms; }
+    html.js .scene[data-reveal] .scene-content > *:nth-child(n+5) { transition-delay: 380ms; }
 }
 
 
@@ -359,11 +482,35 @@ html.js body.loaded #navbar {
     overflow: hidden; /* clips the Ken Burns layer */
 }
 
-/* Living photography: Ken Burns settle into a perpetual imperceptible drift,
-   plus mouse parallax via the independent `translate` property (composes with
-   the keyframe `transform` — they never fight). The resting scale keeps a
-   margin so parallax never exposes edges.
-   Desktop + motion-OK only — mobile keeps the static photo. */
+/* Living photography: the whole stage settles on load, then drifts forever.
+   Layer-level morph scale composes underneath (child transforms); parallax
+   rides on the independent `translate` property — they never fight.
+   Desktop + motion-OK only — mobile keeps static photos. */
+@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+    html.js .stage {
+        translate: var(--par-x, 0px) var(--par-y, 0px);
+        transform: scale(1.05);
+        transform-origin: 50% 40%;
+    }
+
+    html.js body.loaded .stage {
+        animation:
+            stage-settle 2200ms var(--ease-lux) both,
+            stage-drift 44s ease-in-out 2200ms infinite alternate;
+    }
+}
+
+@keyframes stage-settle {
+    from { transform: scale(1.05); }
+    to   { transform: scale(1.015); }
+}
+
+@keyframes stage-drift {
+    from { transform: scale(1.015); }
+    to   { transform: scale(1.04) translateY(-1%); }
+}
+
+/* Legacy Ken Burns for standalone pages still using .page-hero (404) */
 @media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
     html.js .page-hero::before {
         content: '';
@@ -371,26 +518,18 @@ html.js body.loaded #navbar {
         inset: 0;
         background: inherit;
         z-index: 0;
-        transform: scale(1.08);
+        transform: scale(1.06);
         transform-origin: 50% 40%;
-        translate: var(--par-x, 0px) var(--par-y, 0px);
     }
 
     html.js body.loaded .page-hero::before {
-        animation:
-            hero-settle 2200ms var(--ease-lux) both,
-            hero-drift 44s ease-in-out 2200ms infinite alternate;
+        animation: hero-settle 2200ms var(--ease-lux) both;
     }
 }
 
 @keyframes hero-settle {
-    from { transform: scale(1.08); }
-    to   { transform: scale(1.03); }
-}
-
-@keyframes hero-drift {
-    from { transform: scale(1.03); }
-    to   { transform: scale(1.06) translateY(-1%); }
+    from { transform: scale(1.06); }
+    to   { transform: scale(1); }
 }
 
 /* Fullscreen ambient video (music page) — src assigned by JS on desktop,
@@ -426,6 +565,7 @@ html.js body.loaded #navbar {
 /* Motion pauses: hero offscreen (.is-off, set by JS) or user toggle */
 html.js body.loaded .page-hero.is-off::before,
 body.motion-off .page-hero::before,
+body.motion-off .stage,
 body.motion-off .footer-ticker-track {
     animation-play-state: paused;
 }
@@ -1152,6 +1292,75 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
     margin-bottom: 2.5rem;
 }
 
+/* Rate sheet: editorial rows instead of cards */
+.rate-list {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 4rem;
+    max-width: 760px;
+}
+
+.rate-row {
+    display: grid;
+    grid-template-columns: 190px 1fr auto;
+    gap: 2rem;
+    align-items: baseline;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: padding-left 0.45s var(--ease-lux);
+}
+
+.rate-row:hover {
+    padding-left: 0.75rem;
+}
+
+.rate-name {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.45rem;
+    line-height: 1.1;
+    color: var(--paper);
+}
+
+.rate-desc {
+    font-size: 0.92rem;
+    color: var(--paper-mid);
+    line-height: 1.65;
+    max-width: 44ch;
+}
+
+.rate-price {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--paper);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+    .rate-row {
+        grid-template-columns: 1fr auto;
+        gap: 0.4rem 1.5rem;
+    }
+
+    .rate-name {
+        grid-column: 1;
+    }
+
+    .rate-price {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .rate-desc {
+        grid-column: 1 / -1;
+    }
+
+    .rate-row:hover {
+        padding-left: 0;
+    }
+}
+
 .services-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1201,8 +1410,10 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
 }
 
 .comparison-title {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.6rem;
     color: var(--paper);
     margin-bottom: 0.5rem;
     text-wrap: balance;
@@ -1873,4 +2084,6 @@ footer {
         transition-duration: 0.01ms !important;
         transition-delay: 0ms !important;
     }
+
+    html { scroll-behavior: auto !important; }
 }
