@@ -141,16 +141,7 @@ canvas:focus:not(:focus-visible) {
 
 /* --- Film Grain (static — never animate) --- */
 
-body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 9990;
-    pointer-events: none;
-    opacity: 0.045;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 180px 180px;
-}
+/* (film grain removed — stripped to the morph) */
 
 
 /* --- Page Veil (transitions; html.js-gated so no-JS users never see it) --- */
@@ -222,6 +213,25 @@ html.js .stage-layer {
     opacity: 1;
 }
 
+/* The imagery NEVER stops: the lit layer drifts continuously (idle Ken
+   Burns on the `translate` property) while the scroll dolly pushes via
+   inline `transform: scale()` — separate properties, they compose. This is
+   the "something always animating" running through the whole scroll. */
+@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+    html.js .stage-layer.is-active {
+        animation: layer-drift 24s ease-in-out infinite alternate;
+    }
+}
+
+@keyframes layer-drift {
+    from { translate: 0% 0%; }
+    to   { translate: -1.2% -0.8%; }
+}
+
+body.motion-off .stage-layer.is-active {
+    animation-play-state: paused;
+}
+
 /* The breath between scenes — opacity driven by the morph module */
 .stage-dim {
     position: absolute;
@@ -231,24 +241,20 @@ html.js .stage-layer {
     pointer-events: none;
 }
 
-/* One cinematic grade over whichever layers are lit */
+/* Light grade only — the photo reads FULL-BLEED and bright (the hero), with
+   just enough darkening top (nav) and bottom (text + footer hand-off) for
+   legibility. Text itself carries a shadow so the centre can stay open. */
 .stage-vignette {
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(100deg,
-            rgba(10, 10, 10, 0.55) 0%,
-            rgba(10, 10, 10, 0.26) 48%,
-            rgba(10, 10, 10, 0.08) 75%),
         linear-gradient(to bottom,
-            rgba(10, 10, 10, 0.72) 0%,
-            rgba(10, 10, 10, 0.26) 24%,
-            rgba(10, 10, 10, 0.3) 60%,
-            rgba(10, 10, 10, 0.88) 100%),
-        radial-gradient(ellipse 140% 100% at 55% 38%,
-            rgba(0, 0, 0, 0.1) 0%,
-            rgba(0, 0, 0, 0.42) 62%,
-            rgba(0, 0, 0, 0.76) 100%);
+            rgba(10, 10, 10, 0.58) 0%,
+            rgba(10, 10, 10, 0.12) 15%,
+            rgba(10, 10, 10, 0) 40%,
+            rgba(10, 10, 10, 0) 52%,
+            rgba(10, 10, 10, 0.42) 84%,
+            rgba(10, 10, 10, 0.82) 100%);
 }
 
 main {
@@ -257,11 +263,21 @@ main {
     flex: 1;
 }
 
-.scene {
+/* --- Chapters (pinned scroll-morph) ---
+   A chapter is a scroll-track. Its content sits in .chapter-pin, centred
+   in the viewport. Light chapters ([data-pin]) get a tall track and a
+   sticky pin so the content HOLDS full-screen and scrubs in/out while the
+   background dollies underneath; content scenes (music/services) flow
+   normally over the same morphing stage. */
+
+.chapter {
     position: relative;
-    min-height: 100vh;
+}
+
+.chapter-pin {
     display: flex;
     align-items: center;
+    min-height: 100vh;
 }
 
 .scene-content {
@@ -269,6 +285,8 @@ main {
     max-width: 1000px;
     margin: 0 auto;
     padding: 8rem 2rem 5rem;
+    /* legibility over bright full-bleed imagery without darkening the photo */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 40px rgba(0, 0, 0, 0.4);
 }
 
 .scene-center {
@@ -279,25 +297,20 @@ main {
     justify-content: center;
 }
 
-/* Scene content reveals as each scene scrolls in (home keeps its own
-   load choreography; only [data-reveal] scenes use this) */
-@media (prefers-reduced-motion: no-preference) {
-    html.js .scene[data-reveal] .scene-content > * {
-        opacity: 0;
-        transform: translateY(26px);
-        transition: opacity 800ms var(--ease-lux), transform 800ms var(--ease-lux);
+/* The pin only engages with JS + motion allowed + a viewport big enough to
+   hold a scene in 100vh. Phones/short landscape fall back to plain stacked
+   full-screens (.chapter-pin keeps min-height:100vh, content grows freely)
+   so nothing clips. */
+@media (min-width: 769px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
+    html.js .chapter[data-pin] {
+        min-height: 150vh;
     }
 
-    html.js .scene[data-reveal].in-view .scene-content > * {
-        opacity: 1;
-        transform: none;
+    html.js .chapter[data-pin] .chapter-pin {
+        position: sticky;
+        top: 0;
+        height: 100vh;
     }
-
-    html.js .scene[data-reveal] .scene-content > *:nth-child(1) { transition-delay: 60ms; }
-    html.js .scene[data-reveal] .scene-content > *:nth-child(2) { transition-delay: 140ms; }
-    html.js .scene[data-reveal] .scene-content > *:nth-child(3) { transition-delay: 220ms; }
-    html.js .scene[data-reveal] .scene-content > *:nth-child(4) { transition-delay: 300ms; }
-    html.js .scene[data-reveal] .scene-content > *:nth-child(n+5) { transition-delay: 380ms; }
 }
 
 
@@ -482,33 +495,9 @@ html.js body.loaded #navbar {
     overflow: hidden; /* clips the Ken Burns layer */
 }
 
-/* Living photography: the whole stage settles on load, then drifts forever.
-   Layer-level morph scale composes underneath (child transforms); parallax
-   rides on the independent `translate` property — they never fight.
-   Desktop + motion-OK only — mobile keeps static photos. */
-@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
-    html.js .stage {
-        translate: var(--par-x, 0px) var(--par-y, 0px);
-        transform: scale(1.05);
-        transform-origin: 50% 40%;
-    }
-
-    html.js body.loaded .stage {
-        animation:
-            stage-settle 2200ms var(--ease-lux) both,
-            stage-drift 44s ease-in-out 2200ms infinite alternate;
-    }
-}
-
-@keyframes stage-settle {
-    from { transform: scale(1.05); }
-    to   { transform: scale(1.015); }
-}
-
-@keyframes stage-drift {
-    from { transform: scale(1.015); }
-    to   { transform: scale(1.04) translateY(-1%); }
-}
+/* The stage no longer animates as a whole — each layer dolly-zooms
+   individually via the morph module (a continuous push per chapter), so
+   there is one camera move per scene rather than a global drift. */
 
 /* Legacy Ken Burns for standalone pages still using .page-hero (404) */
 @media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
@@ -542,8 +531,6 @@ html.js body.loaded #navbar {
     object-fit: cover;
     z-index: 0;
     opacity: 0;
-    scale: 1.05;
-    translate: calc(var(--par-x, 0px) * 1.4) calc(var(--par-y, 0px) * 1.4);
     transition: opacity 1.4s ease;
     pointer-events: none;
 }
@@ -552,21 +539,9 @@ html.js body.loaded #navbar {
     opacity: 1;
 }
 
-/* Film dust canvas (injected by JS, desktop only) */
-.dust-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* Motion pauses: hero offscreen (.is-off, set by JS) or user toggle */
-html.js body.loaded .page-hero.is-off::before,
-body.motion-off .page-hero::before,
-body.motion-off .stage,
-body.motion-off .footer-ticker-track {
+/* Motion toggle pauses the one remaining infinite CSS animation (the badge
+   pulse); videos + the scroll dolly are paused in JS. */
+body.motion-off .hero-badge .badge-dot {
     animation-play-state: paused;
 }
 
@@ -948,39 +923,7 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
 
 /* --- About --- */
 
-/* --- First-Visit Intro (logo draws itself on the veil) --- */
-
-.intro-mark {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    background: #0a0a0a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    transition: opacity 600ms var(--ease-lux);
-}
-
-.intro-mark.is-done {
-    opacity: 0;
-}
-
-.intro-mark svg {
-    width: 92px;
-    height: 92px;
-}
-
-.intro-mark [stroke] {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: mark-draw 800ms var(--ease-lux) forwards;
-    animation-delay: calc(var(--d, 0) * 1ms);
-}
-
-@keyframes mark-draw {
-    to { stroke-dashoffset: 0; }
-}
+/* (first-visit logo-draw intro removed — stripped to the morph) */
 
 
 /* --- 404 --- */
@@ -1040,10 +983,7 @@ html.js body.loaded .hero-links a:nth-child(2) { animation-delay: 850ms; }
 .audio-player {
     position: relative;
     border: 1px solid transparent;
-    background:
-        radial-gradient(240px circle at var(--lx, -300px) var(--ly, -300px),
-            rgba(255, 255, 255, 0.06), transparent 65%) padding-box,
-        linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)) padding-box;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)) padding-box;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.05),
         0 1px 2px rgba(0, 0, 0, 0.45),
@@ -1837,39 +1777,9 @@ footer {
     position: relative;
     z-index: 2;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 0 0 2rem;
+    padding: 2.5rem 0 2rem;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(8px);
-}
-
-/* Release ticker */
-.footer-ticker {
-    overflow: hidden;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 0.85rem 0;
-    margin-bottom: 2.25rem;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-
-.footer-ticker-track {
-    display: inline-flex;
-    white-space: nowrap;
-    animation: ticker 38s linear infinite;
-}
-
-.footer-ticker-track span {
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    font-weight: 500;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(244, 241, 236, 0.35);
-    padding-right: 0.3em;
-}
-
-@keyframes ticker {
-    to { transform: translateX(-50%); }
 }
 
 .footer-container {
@@ -2077,7 +1987,6 @@ footer {
 
     /* Infinite/alternate animations: explicit end states */
     .hero-badge .badge-dot { animation: none; }
-    .footer-ticker-track { animation: none; }
 
     /* .nav-cta's base transition uses !important — re-kill it here */
     .nav-cta {

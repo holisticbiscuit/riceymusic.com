@@ -55,64 +55,10 @@
 
 
 // -----------------------------------------------
-// First-Visit Intro — the fractured-square mark
-// draws itself on a black cover, once per session.
-// Sits above the veil; both are black, so the
-// hand-off is seamless.
-// -----------------------------------------------
-
-(function () {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let seen = null;
-    try { seen = sessionStorage.getItem('ricey-intro'); } catch { return; }
-    if (seen) return;
-    // If the write fails (quota, read-only storage), skip the intro rather
-    // than replaying it on every navigation.
-    try { sessionStorage.setItem('ricey-intro', '1'); } catch { return; }
-
-    const cover = document.createElement('div');
-    cover.className = 'intro-mark';
-    cover.setAttribute('aria-hidden', 'true');
-    cover.innerHTML =
-        '<svg viewBox="0 0 100 100" fill="none" stroke="#f4f1ec" stroke-linecap="square">' +
-        '<rect x="3" y="3" width="94" height="94" stroke-width="1.4" pathLength="1" style="--d:0"/>' +
-        '<path d="M0,65 L55,51" stroke-width="1.6" pathLength="1" style="--d:140"/>' +
-        '<path d="M55,51 L99,17" stroke-width="0.8" pathLength="1" style="--d:240"/>' +
-        '<path d="M2,17 L34,38" stroke-width="0.7" pathLength="1" style="--d:320"/>' +
-        '<path d="M57,8 L34,38 L13,58" stroke-width="0.7" pathLength="1" style="--d:400"/>' +
-        '<path d="M99,80 L68,58" stroke-width="1.0" pathLength="1" style="--d:460"/>' +
-        '<path d="M84,99 L68,58" stroke-width="0.9" pathLength="1" style="--d:520"/>' +
-        '<path d="M55,51 L61,71 L68,58 L55,51" stroke-width="0.6" pathLength="1" style="--d:580"/>' +
-        '<path d="M61,71 L47,99" stroke-width="0.6" pathLength="1" style="--d:640"/>' +
-        '</svg>';
-
-    let finished = false;
-    const finish = () => {
-        if (finished) return;
-        finished = true;
-        cover.classList.add('is-done');
-        cover.addEventListener('transitionend', () => cover.remove(), { once: true });
-        setTimeout(() => cover.remove(), 1200); // fallback if transitionend never fires
-    };
-
-    const mount = () => {
-        document.body.appendChild(cover);
-        setTimeout(finish, 1750);
-        // The page behind the cover is interactive — yield immediately if
-        // the user starts doing something.
-        window.addEventListener('pointerdown', finish, { once: true });
-        window.addEventListener('keydown', finish, { once: true });
-    };
-    if (document.body) mount();
-    else document.addEventListener('DOMContentLoaded', mount);
-})();
-
-
-// -----------------------------------------------
 // Motion Control — WCAG 2.2.2 pause for autoplaying
-// motion (videos, drift, dust, ticker). Injected
-// button, persisted; also reacts to live changes of
-// prefers-reduced-motion.
+// motion (the ambient video + the scroll dolly).
+// Injected button, persisted; also reacts to live
+// changes of prefers-reduced-motion.
 // -----------------------------------------------
 
 (function () {
@@ -162,48 +108,19 @@
 
 
 // -----------------------------------------------
-// Hero Mouse Parallax (fine pointers, motion-OK)
-// Writes --par-x/--par-y; the photo layer and the
-// ambient video consume them via `translate`.
-// -----------------------------------------------
-
-(function () {
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const target = document.querySelector('.stage');
-    if (!target) return;
-
-    const MAX = 8; // px — must stay inside the stage's 1.015 scale margin at the drift trough
-    let tx = 0, ty = 0, x = 0, y = 0, raf = null;
-
-    function loop() {
-        x += (tx - x) * 0.06;
-        y += (ty - y) * 0.06;
-        target.style.setProperty('--par-x', x.toFixed(2) + 'px');
-        target.style.setProperty('--par-y', y.toFixed(2) + 'px');
-        raf = (Math.abs(tx - x) > 0.05 || Math.abs(ty - y) > 0.05)
-            ? requestAnimationFrame(loop) : null;
-    }
-
-    window.addEventListener('mousemove', (e) => {
-        tx = -((e.clientX / window.innerWidth) - 0.5) * 2 * MAX;
-        ty = -((e.clientY / window.innerHeight) - 0.5) * 2 * MAX;
-        if (!raf) raf = requestAnimationFrame(loop);
-    }, { passive: true });
-})();
-
-
-// -----------------------------------------------
 // Scene Morph — the heart of the single-page site.
-// Each fixed stage layer crossfades and settles to
-// scale as its scene crosses the viewport center.
-// Scroll-linked, so it scrubs in both directions.
+// Each chapter is a scroll-track over one fixed stage
+// layer. As a chapter crosses the viewport its layer
+// crossfades in and the camera dollies through it
+// (continuous push), while the pinned content scrubs
+// in, holds, and scrubs out. Smoothed, so it feels
+// filmed rather than stepped, and scrubs both ways.
 // -----------------------------------------------
 
 (function () {
-    const sceneEls = [...document.querySelectorAll('.scene')];
+    const chapters = [...document.querySelectorAll('.chapter')];
     const stage = document.querySelector('.stage');
-    if (!sceneEls.length || !stage) return;
+    if (!chapters.length || !stage) return;
 
     const layers = {};
     stage.querySelectorAll('.stage-layer').forEach((l) => { layers[l.dataset.scene] = l; });
@@ -213,15 +130,20 @@
 
     if (bgVideo) bgVideo.dataset.lit = '0'; // dark until its scene scrolls in
 
-    // Smoothed per-scene state: targets follow scroll, currents glide after
-    // them — the inertia is what makes the scrub feel filmed, not stepped.
-    const st = sceneEls.map((el) => ({
+    // Smoothed per-chapter state: targets follow scroll, currents glide
+    // after them — the inertia is what makes the scrub feel filmed.
+    const st = chapters.map((el) => ({
         el,
         layer: layers[el.id] || null,
-        content: el.querySelector('.scene-content'),
-        o: 0, oT: 0,        // layer opacity (current / target)
-        sh: 0, shT: 0,      // content drift -1..1 (current / target)
-        dir: 1
+        // Only pinned chapters scrub their content in/out; content scenes
+        // (music/services) keep their content fully visible + interactive so
+        // the player is never dimmed or disabled while in use.
+        content: el.hasAttribute('data-pin') ? el.querySelector('.scene-content') : null,
+        o: 0, oT: 0,    // bg crossfade bell (current / target)
+        p: 0, pT: 0,    // traversal 0..1 across the whole pass (the dolly)
+        c: 0, cT: 0     // pinned content fade — tied to the PIN span, not the
+                        // bg bell, so content fades out before the pin releases
+                        // (in place) instead of fading while sliding away
     }));
 
     let videoLit = false;
@@ -233,15 +155,32 @@
         st.forEach((it, idx) => {
             const r = it.el.getBoundingClientRect();
             let center = r.top + r.height / 2;
-            // Nothing follows the last scene — never dim it once passed
+            // Nothing follows the last chapter — never dim it once passed
             if (idx === st.length - 1 && center < vc) center = vc;
-            const signed = center - vc;
-            // Center *band*: tall scenes hold while you scroll inside them
+            // Center *band*: tall pinned chapters hold while scrolling through
             const overflow = Math.max(0, (r.height - vh) / 2);
-            const d = Math.max(0, Math.abs(signed) - overflow);
-            const t = Math.max(0, 1 - d / (vh * 0.9));
-            it.oT = t * t * (3 - 2 * t); // smoothstep
-            it.shT = Math.max(-1, Math.min(1, signed / vh));
+            const d = Math.max(0, Math.abs(center - vc) - overflow);
+            const t = Math.max(0, 1 - d / (vh * 0.7));
+            it.oT = t * t * (3 - 2 * t); // smoothstep crossfade bell
+            // Traversal: 0 as the chapter enters the bottom, 1 once it has
+            // left past the top — drives one continuous camera push.
+            it.pT = Math.max(0, Math.min(1, (vh - r.top) / (vh + r.height)));
+
+            // Pinned content: fades IN with the bg bell (so the hero is full
+            // at the very top of the page), then fades OUT early — before the
+            // sticky pin releases — so it dies in place rather than sliding
+            // away. On non-tall pins (mobile / reduced) it just follows the
+            // bell. span = the sticky travel distance.
+            if (it.content) {
+                const span = r.height - vh;
+                if (span > 1) {
+                    const pin = Math.max(0, Math.min(1, -r.top / span));
+                    const out = Math.min(1, (1 - pin) / 0.16);  // 1 -> 0 over last 16%
+                    it.cT = Math.min(it.oT, out * out * (3 - 2 * out));
+                } else {
+                    it.cT = it.oT;
+                }
+            }
         });
     }
 
@@ -249,26 +188,25 @@
         if (it.layer) {
             it.layer.style.opacity = it.o.toFixed(3);
             if (!REDUCED) {
-                // Departing scenes push past the camera (up to 14%); arriving
-                // ones settle down into place (7%) — a dolly, not a dissolve.
-                // Blend the push amount through the smoothed drift sign so the
-                // crossing never steps, even on fast wheel flings.
-                const blend = Math.max(-1, Math.min(1, it.sh * 6));
-                const amt = 0.105 - 0.035 * blend;
-                it.layer.style.transform = 'scale(' + (1 + amt * (1 - it.o)).toFixed(4) + ')';
+                // Continuous dolly. Kept modest (max ~1.14) so the GPU isn't
+                // magnifying the rasterised layer enough to look soft; the
+                // idle drift carries the "always moving" feel instead of a
+                // huge zoom. No will-change here on purpose — pinning the
+                // layer to a static texture makes the scaled image blurry.
+                it.layer.style.transform = 'scale(' + (1.04 + 0.1 * it.p).toFixed(4) + ')';
             }
         }
         if (it.content && !REDUCED) {
-            // Content travels with the handoff and dies into it. At rest the
-            // inline styles are cleared — opacity < 1 on this container would
-            // create a backdrop root and kill the glass panels inside it.
-            const sh = Math.abs(it.sh) < 0.001 ? 0 : it.sh;
-            it.content.style.transform = sh === 0 ? '' : 'translateY(' + (sh * 70).toFixed(1) + 'px)';
-            const co = Math.min(1, it.o * 1.2);
-            it.content.style.opacity = co >= 0.999 ? '' : co.toFixed(3);
-            // Faded scenes shouldn't be tabbable or clickable
-            it.content.style.visibility = it.o < 0.02 ? 'hidden' : '';
-            it.content.style.pointerEvents = it.o < 0.15 ? 'none' : '';
+            // Content scrubs in, holds, scrubs out IN PLACE (the pin holds it
+            // centred; .c is tied to the pin span). Clearing inline styles at
+            // rest avoids a backdrop root that would kill the glass panels.
+            const e = it.c;
+            it.content.style.opacity = e >= 0.999 ? '' : e.toFixed(3);
+            it.content.style.transform = e >= 0.999 ? '' : 'scale(' + (0.985 + 0.015 * e).toFixed(4) + ')';
+            it.content.style.visibility = e < 0.02 ? 'hidden' : '';
+            // inert removes faint content from BOTH the tab order and pointer
+            // events in one shot — no keyboard-focusable invisible content.
+            it.content.toggleAttribute('inert', e < 0.15);
         }
     }
 
@@ -292,21 +230,31 @@
     function tick() {
         let busy = false;
         let maxO = 0;
+        let lead = null;
         const k = REDUCED ? 1 : 0.16;
         st.forEach((it) => {
             it.o += (it.oT - it.o) * k;
-            it.sh += (it.shT - it.sh) * k;
-            if (Math.abs(it.oT - it.o) > 0.002 || Math.abs(it.shT - it.sh) > 0.002) {
+            it.p += (it.pT - it.p) * k;
+            it.c += (it.cT - it.c) * k;
+            if (Math.abs(it.oT - it.o) > 0.002 ||
+                Math.abs(it.pT - it.p) > 0.002 ||
+                Math.abs(it.cT - it.c) > 0.002) {
                 busy = true;
             } else {
                 it.o = it.oT;
-                it.sh = it.shT;
+                it.p = it.pT;
+                it.c = it.cT;
             }
             applyScene(it);
-            if (it.o > maxO) maxO = it.o;
+            if (it.o > maxO) { maxO = it.o; lead = it; }
+        });
+        // The lit layer drifts continuously (CSS idle Ken Burns) — only one
+        // at a time so we never animate hidden layers.
+        st.forEach((it) => {
+            if (it.layer) it.layer.classList.toggle('is-active', it === lead && it.o > 0.5);
         });
         // The breath between scenes: the stage dips toward black mid-handoff
-        if (dim) dim.style.opacity = ((1 - maxO) * 0.45).toFixed(3);
+        if (dim) dim.style.opacity = ((1 - maxO) * 0.4).toFixed(3);
         syncVideo();
         raf = busy ? requestAnimationFrame(tick) : null;
     }
@@ -326,13 +274,14 @@
 
     // Initial state lands instantly — no glide on load
     computeTargets();
-    st.forEach((it) => { it.o = it.oT; it.sh = it.shT; applyScene(it); });
-    if (dim) dim.style.opacity = ((1 - Math.max(...st.map((x) => x.o))) * 0.45).toFixed(3);
+    st.forEach((it) => { it.o = it.oT; it.p = it.pT; it.c = it.cT; applyScene(it); });
+    const lead0 = st.reduce((a, b) => (b.o > a.o ? b : a), st[0]);
+    st.forEach((it) => { if (it.layer) it.layer.classList.toggle('is-active', it === lead0 && it.o > 0.5); });
+    if (dim) dim.style.opacity = ((1 - Math.max(...st.map((x) => x.o))) * 0.4).toFixed(3);
     syncVideo();
 
-    // Backgrounds: a layer that is lit RIGHT NOW (fragment entry via the old
-    // page URLs) loads immediately; the rest load just after first paint to
-    // stay off the critical path.
+    // Backgrounds: a layer lit RIGHT NOW (fragment entry) loads immediately;
+    // the rest load just after first paint to stay off the critical path.
     const assignBg = (l) => {
         if (l.dataset.bg && !l.style.backgroundImage) {
             l.style.backgroundImage = "url('" + l.dataset.bg + "')";
@@ -387,141 +336,8 @@
         });
     }, { rootMargin: '-45% 0px -45% 0px' });
 
-    // Observe every scene — entering an unmapped one (home) clears the highlight
-    document.querySelectorAll('.scene').forEach((s) => spy.observe(s));
-})();
-
-
-// -----------------------------------------------
-// Scene Reveals — content rises as each scene
-// first scrolls into view
-// -----------------------------------------------
-
-(function () {
-    const scenes = document.querySelectorAll('.scene[data-reveal]');
-    if (!scenes.length) return;
-
-    if (!('IntersectionObserver' in window) ||
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        scenes.forEach((s) => s.classList.add('in-view'));
-        return;
-    }
-
-    const io = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-            if (!e.isIntersecting) return;
-            e.target.classList.add('in-view');
-            io.unobserve(e.target);
-        });
-    }, { threshold: 0.18 });
-
-    scenes.forEach((s) => io.observe(s));
-})();
-
-
-// -----------------------------------------------
-// Film Dust (desktop, motion-OK) — slow motes over
-// the hero photo, dimmed by the overlay above them.
-// -----------------------------------------------
-
-(function () {
-    if (!window.matchMedia('(pointer: fine) and (min-width: 769px)').matches) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Single-page stage (index) or standalone hero (404) — dust either way
-    const stage = document.querySelector('.stage');
-    const hero = document.querySelector('.page-hero');
-    const host = stage || hero;
-    const before = stage
-        ? stage.querySelector('.stage-vignette')
-        : hero && hero.querySelector('.page-hero-overlay');
-    if (!host || !before) return;
-
-    const canvas = document.createElement('canvas');
-    canvas.className = 'dust-canvas';
-    canvas.setAttribute('aria-hidden', 'true');
-    host.insertBefore(canvas, before);
-    const ctx = canvas.getContext('2d');
-
-    let w = 0, h = 0, raf = null, motionOff = false;
-    // Render at CSS resolution and ~30fps — motes are soft sub-2px dots,
-    // a hi-DPI 60fps backing store is pure bandwidth waste.
-    const DPR = 1;
-    let frameToggle = false;
-    const motes = [];
-
-    function size() {
-        const r = host.getBoundingClientRect();
-        w = r.width; h = r.height;
-        canvas.width = w * DPR;
-        canvas.height = h * DPR;
-        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    }
-
-    function seed() {
-        motes.length = 0;
-        const count = Math.round(Math.min(40, w / 36));
-        for (let i = 0; i < count; i++) {
-            motes.push({
-                x: Math.random() * 1,        // 0..1 of width
-                y: Math.random() * 1,        // 0..1 of height
-                r: 0.6 + Math.random() * 1.6,
-                vy: 0.00004 + Math.random() * 0.00009,  // fraction of height per ms
-                amp: 6 + Math.random() * 18,
-                phase: Math.random() * 6.28,
-                speed: 0.0002 + Math.random() * 0.0004,
-                a: 0.05 + Math.random() * 0.11
-            });
-        }
-    }
-
-    let last = 0;
-    function frame(t) {
-        frameToggle = !frameToggle;
-        if (frameToggle) { raf = requestAnimationFrame(frame); return; } // ~30fps
-        const dt = last ? Math.min(80, t - last) : 32;
-        last = t;
-        ctx.clearRect(0, 0, w, h);
-        for (const m of motes) {
-            m.y -= m.vy * dt;
-            if (m.y < -0.02) { m.y = 1.02; m.x = Math.random(); }
-            const px = m.x * w + Math.sin(t * m.speed + m.phase) * m.amp;
-            ctx.beginPath();
-            ctx.arc(px, m.y * h, m.r, 0, 6.28);
-            ctx.fillStyle = 'rgba(244, 241, 236, ' + m.a + ')';
-            ctx.fill();
-        }
-        raf = requestAnimationFrame(frame);
-    }
-
-    function start() { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } }
-    function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
-
-    // Pause dust (and the legacy drift via .is-off) when the host scrolls
-    // out of view — a fixed stage never does; a 404 hero can.
-    let heroVisible = true;
-    const io = 'IntersectionObserver' in window
-        ? new IntersectionObserver((entries) => {
-            heroVisible = entries[0].isIntersecting;
-            host.classList.toggle('is-off', !heroVisible);
-            (heroVisible && !document.hidden && !motionOff) ? start() : stop();
-        }, { threshold: 0.05 })
-        : null;
-
-    // Start after first paint settles — keeps the rAF loop out of the
-    // load/entrance window (and out of headless virtual-time traps)
-    setTimeout(() => {
-        size(); seed();
-        if (!document.body.classList.contains('motion-off')) start();
-        if (io) io.observe(host);
-        window.addEventListener('resize', () => { size(); seed(); });
-        document.addEventListener('visibilitychange', () => {
-            (document.hidden || !heroVisible || motionOff) ? stop() : start();
-        });
-        window.addEventListener('ricey:motion', (e) => {
-            motionOff = e.detail.off;
-            (motionOff || !heroVisible || document.hidden) ? stop() : start();
-        });
-    }, 900);
+    // Observe every chapter — entering an unmapped one (home) clears the highlight
+    document.querySelectorAll('.chapter').forEach((s) => spy.observe(s));
 })();
 
 
@@ -557,35 +373,6 @@
     window.addEventListener('ricey:motion', (e) => {
         motionOff = e.detail.off;
         motionOff ? video.pause() : tryPlay();
-    });
-})();
-
-
-// -----------------------------------------------
-// Pointer Spotlight — panels are faintly lit where
-// the cursor touches them (fine pointers only).
-// -----------------------------------------------
-
-(function () {
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-    const panels = document.querySelectorAll('.service-card, .featured-release, .audio-player, .music-card');
-    panels.forEach((p) => {
-        let raf = null;
-        p.addEventListener('pointermove', (e) => {
-            if (raf) return;
-            const cx = e.clientX, cy = e.clientY;
-            raf = requestAnimationFrame(() => {
-                raf = null;
-                const r = p.getBoundingClientRect();
-                p.style.setProperty('--lx', Math.round(cx - r.left) + 'px');
-                p.style.setProperty('--ly', Math.round(cy - r.top) + 'px');
-            });
-        });
-        p.addEventListener('pointerleave', () => {
-            if (raf) { cancelAnimationFrame(raf); raf = null; }
-            p.style.setProperty('--lx', '-300px');
-            p.style.setProperty('--ly', '-300px');
-        });
     });
 })();
 
