@@ -154,10 +154,10 @@ function About() {
       <ParallaxImage src="/images/about.webp" opacity={0.22} />
       <div className="absolute inset-0 bg-gradient-to-b from-base via-base/65 to-base" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-3xl px-6">
-        <SectionLabel index="01 — About">About</SectionLabel>
+        <SectionLabel index="01 / About">About</SectionLabel>
         <div className="space-y-5 text-[1.05rem] leading-[1.85] text-white/65">
           <p>Ricey is a techno and progressive artist and audio engineer. What started as a last resort, picking music after failing another subject at school, quickly became something far deeper. What was meant to be a backup plan turned into <em className="font-serif text-ink">an obsession with sound</em>.</p>
-          <p>Now dedicated to crafting dark, immersive soundscapes that sit in the space <em className="font-serif text-ink">between thought and feeling</em>. On the engineering side, the philosophy is simple, truly enhance an artist's vision — every mix and master treated with the same precision and care.</p>
+          <p>Now dedicated to crafting dark, immersive soundscapes that sit in the space <em className="font-serif text-ink">between thought and feeling</em>. On the engineering side, the philosophy is simple: truly enhance an artist's vision. Every mix and master treated with the same precision and care.</p>
         </div>
       </motion.div>
     </section>
@@ -171,10 +171,10 @@ function Music() {
       <div className="absolute inset-0 bg-gradient-to-b from-base via-base/55 to-base" />
       <div className="ember-drift pointer-events-none absolute left-1/2 top-1/2 h-[460px] w-[460px] rounded-full bg-[var(--color-ember)] blur-[120px]" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-5xl px-6">
-        <SectionLabel index="02 — Music">Music</SectionLabel>
+        <SectionLabel index="02 / Music">Music</SectionLabel>
         <div className="grid items-center gap-10 md:grid-cols-[300px_1fr]">
           <GlareCard className="mx-auto aspect-square w-full max-w-[300px]">
-            <img src="/images/years.jpg" alt="Ricey — Years cover art" className="h-full w-full object-cover" />
+            <img src="/images/years.jpg" alt="Ricey, Years cover art" className="h-full w-full object-cover" />
           </GlareCard>
           <div>
             <div className="eyebrow mb-3 flex items-center gap-2 text-white/50"><span className="h-1.5 w-1.5 rounded-full bg-[var(--color-ember)]" /> Out now on mau5trap</div>
@@ -209,7 +209,7 @@ function Services() {
       <ParallaxImage src="/images/services.webp" opacity={0.18} slow />
       <div className="absolute inset-0 bg-gradient-to-b from-base via-base/75 to-base" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-4xl px-6">
-        <SectionLabel index="03 — Mastering">Mastering</SectionLabel>
+        <SectionLabel index="03 / Mastering">Mastering</SectionLabel>
         <p className="mb-4 text-[1.3rem] text-white/60">Mastering, from the artist behind <em className="font-serif text-ink">Years</em>.</p>
         <p className="mb-10 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-white/45">
           Sony Music &middot; Columbia Records &middot; Polydor &middot; Virgin Music &middot; Universal Music Group &middot; The Orchard
@@ -237,7 +237,7 @@ function Contact() {
       <ParallaxImage src="/images/contact.webp" opacity={0.22} />
       <div className="absolute inset-0 bg-gradient-to-b from-base via-base/65 to-base" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-3xl px-6">
-        <SectionLabel index="04 — Get in touch">Get in touch</SectionLabel>
+        <SectionLabel index="04 / Get in touch">Get in touch</SectionLabel>
         <p className="mb-10 text-[1.3rem] text-white/60">Interested in working together? <em className="font-serif text-ink">Let&rsquo;s talk.</em></p>
         <div className="space-y-8">
           <div>
