@@ -25,7 +25,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      # npm install (not ci): the Windows-generated lockfile omits the Linux
+      # native/wasm optional deps (@emnapi, tailwind oxide), which makes the
+      # strict `npm ci` check fail on the Ubuntu runner.
+      - run: npm install --no-audit --no-fund
       - run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
