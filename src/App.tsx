@@ -1,8 +1,12 @@
-import { motion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { Spotlight } from './components/Spotlight'
 import { TextGenerateEffect } from './components/TextGenerateEffect'
 import { GlareCard } from './components/GlareCard'
 import { AudioPlayer } from './components/AudioPlayer'
+import { ParallaxImage } from './components/ParallaxImage'
+import { useLenis } from './lib/useLenis'
+import { cn } from './lib/utils'
 
 const SPOTIFY = 'https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c'
 
@@ -27,17 +31,29 @@ function Nav() {
     ['#music', 'Music'],
     ['#services', 'Services'],
   ]
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl">
+    <nav
+      className={cn(
+        'fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500',
+        scrolled ? 'border-white/[0.07] bg-base/70 backdrop-blur-xl' : 'border-transparent bg-transparent',
+      )}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <a href="#home" className="font-display text-xl tracking-[0.18em] text-ink">RICEY</a>
+        <a href="#home" className="font-display text-xl tracking-[0.18em] text-ink [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">RICEY</a>
         <div className="flex items-center gap-7">
           {links.map(([href, label]) => (
-            <a key={href} href={href} className="hidden font-mono text-[0.72rem] uppercase tracking-[0.16em] text-white/55 transition-colors hover:text-ink sm:inline">
+            <a key={href} href={href} className="hidden font-mono text-[0.72rem] uppercase tracking-[0.16em] text-white/70 transition-colors hover:text-ink sm:inline [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
               {label}
             </a>
           ))}
-          <a href="#contact" className="rounded bg-ink px-4 py-2 text-xs font-semibold tracking-wide text-base transition-transform hover:-translate-y-px">
+          <a href="#contact" className="rounded bg-ink px-4 py-2 text-xs font-semibold tracking-wide text-base shadow-lg shadow-black/30 transition-transform hover:-translate-y-px">
             Get in touch
           </a>
         </div>
@@ -47,12 +63,25 @@ function Nav() {
 }
 
 function Hero() {
+  const ref = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%'])
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '34%'])
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0])
+
   return (
-    <section id="home" className="relative flex min-h-svh items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.webp')" }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-base/70 via-base/30 to-base/90" />
+    <section ref={ref} id="home" className="relative flex min-h-svh items-center justify-center overflow-hidden">
+      {/* portrait — parallax drift + slow breathing */}
+      <motion.div style={{ y: bgY }} className="absolute inset-[-10%]">
+        <div className="absolute inset-0 bg-cover bg-[center_22%] breathe" style={{ backgroundImage: "url('/images/hero.webp')" }} />
+      </motion.div>
+      {/* cinematic scrims: vertical wash, edge vignette, top nav scrim */}
+      <div className="absolute inset-0 bg-gradient-to-b from-base/80 via-base/35 to-base" />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(125% 90% at 50% 32%, transparent 38%, var(--color-base) 100%)' }} />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-base/85 to-transparent" />
       <Spotlight className="-top-40 left-0 md:-top-20 md:left-60" />
-      <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
+
+      <motion.div style={{ y: contentY, opacity: contentOpacity }} className="relative z-10 mx-auto w-full max-w-6xl px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
@@ -62,20 +91,20 @@ function Hero() {
           <span className="eyebrow text-white/70">Newly signed &middot; <strong className="font-semibold text-ink">mau5trap</strong></span>
         </motion.div>
 
-        <h1 className="font-display text-[clamp(3.5rem,15vw,11rem)] font-medium leading-[0.92] tracking-[0.12em] text-ink">
+        <h1 className="whitespace-nowrap font-display text-[clamp(2.8rem,12.5vw,9.5rem)] font-medium leading-[0.9] tracking-[0.06em] text-ink [text-shadow:0_2px_40px_rgba(0,0,0,0.45)]">
           <TextGenerateEffect words="R I C E Y" delay={0.2} />
         </h1>
 
         <motion.p
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 0.8 }}
-          className="mt-5 font-serif text-2xl italic text-white/70"
+          className="mt-5 font-serif text-2xl italic text-white/75"
         >
           Artist &amp; Audio Engineer
         </motion.p>
 
         <motion.p
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.05, duration: 0.7 }}
-          className="mt-6 text-sm text-white/55"
+          className="mt-6 text-sm text-white/60"
         >
           New single <em className="font-serif text-base text-white/90">&ldquo;Years&rdquo;</em>, out now on mau5trap
         </motion.p>
@@ -91,7 +120,21 @@ function Hero() {
             Services
           </a>
         </motion.div>
-      </div>
+      </motion.div>
+
+      {/* scroll cue */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6, duration: 1 }}
+        style={{ opacity: contentOpacity }}
+        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }} transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+          className="eyebrow text-[0.6rem] text-white/40"
+        >
+          Scroll
+        </motion.div>
+      </motion.div>
     </section>
   )
 }
@@ -108,8 +151,8 @@ function SectionLabel({ index, children }: { index: string; children: React.Reac
 function About() {
   return (
     <section id="about" className="relative overflow-hidden border-t border-white/[0.04] py-32">
-      <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('/images/about.webp')" }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/70 to-base" />
+      <ParallaxImage src="/images/about.webp" opacity={0.22} />
+      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/65 to-base" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-3xl px-6">
         <SectionLabel index="01 — About">About</SectionLabel>
         <div className="space-y-5 text-[1.05rem] leading-[1.85] text-white/65">
@@ -124,9 +167,9 @@ function About() {
 function Music() {
   return (
     <section id="music" className="relative overflow-hidden border-t border-white/[0.04] py-32">
-      <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: "url('/images/music.webp')" }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/60 to-base" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-ember)] opacity-15 blur-[120px]" />
+      <ParallaxImage src="/images/music.webp" opacity={0.26} slow />
+      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/55 to-base" />
+      <div className="ember-drift pointer-events-none absolute left-1/2 top-1/2 h-[460px] w-[460px] rounded-full bg-[var(--color-ember)] blur-[120px]" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-5xl px-6">
         <SectionLabel index="02 — Music">Music</SectionLabel>
         <div className="grid items-center gap-10 md:grid-cols-[300px_1fr]">
@@ -163,8 +206,8 @@ function Services() {
   ]
   return (
     <section id="services" className="relative overflow-hidden border-t border-white/[0.04] py-32">
-      <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{ backgroundImage: "url('/images/services.webp')" }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/80 to-base" />
+      <ParallaxImage src="/images/services.webp" opacity={0.18} slow />
+      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/75 to-base" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-4xl px-6">
         <SectionLabel index="03 — Mastering">Mastering</SectionLabel>
         <p className="mb-4 text-[1.3rem] text-white/60">Mastering, from the artist behind <em className="font-serif text-ink">Years</em>.</p>
@@ -191,8 +234,8 @@ function Services() {
 function Contact() {
   return (
     <section id="contact" className="relative overflow-hidden border-t border-white/[0.04] py-36">
-      <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: "url('/images/contact.webp')" }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/70 to-base" />
+      <ParallaxImage src="/images/contact.webp" opacity={0.22} />
+      <div className="absolute inset-0 bg-gradient-to-b from-base via-base/65 to-base" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-3xl px-6">
         <SectionLabel index="04 — Get in touch">Get in touch</SectionLabel>
         <p className="mb-10 text-[1.3rem] text-white/60">Interested in working together? <em className="font-serif text-ink">Let&rsquo;s talk.</em></p>
@@ -231,6 +274,7 @@ function Footer() {
 }
 
 export default function App() {
+  useLenis()
   return (
     <>
       <Nav />
@@ -242,6 +286,8 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      {/* film grain threaded through the whole page */}
+      <div className="grain" aria-hidden />
     </>
   )
 }

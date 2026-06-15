@@ -85,8 +85,58 @@ button:focus:not(:focus-visible) { outline: none; }
 
 .animate-spotlight { animation: spotlight 2.6s var(--ease-lux, ease) 0.5s 1 forwards; }
 
+/* ---- Always-on ambient motion (the "flowy" layer) ---- */
+
+/* Slow cinematic drift + scale — keeps every backdrop alive even at rest. */
+@keyframes kenburns {
+  0%   { transform: scale(1.06) translate3d(0, 0, 0); }
+  50%  { transform: scale(1.14) translate3d(-1.6%, -1.4%, 0); }
+  100% { transform: scale(1.06) translate3d(0, 0, 0); }
+}
+.kenburns { animation: kenburns 42s ease-in-out infinite; will-change: transform; }
+.kenburns-slow { animation-duration: 64s; }
+
+/* Hero portrait breathing — barely perceptible, never static. */
+@keyframes breathe {
+  0%, 100% { transform: scale(1.08); }
+  50%      { transform: scale(1.15); }
+}
+.breathe { animation: breathe 28s ease-in-out infinite; will-change: transform; }
+
+/* Ember bloom drifts behind the Years art. */
+@keyframes ember-drift {
+  0%   { transform: translate3d(-50%, -50%, 0) scale(1);   opacity: 0.12; }
+  50%  { transform: translate3d(-46%, -54%, 0) scale(1.18); opacity: 0.22; }
+  100% { transform: translate3d(-50%, -50%, 0) scale(1);   opacity: 0.12; }
+}
+.ember-drift { animation: ember-drift 18s ease-in-out infinite; will-change: transform, opacity; }
+
+/* Animated film grain — a single texture threaded through the whole page. */
+@keyframes grain-shift {
+  0%   { transform: translate3d(0, 0, 0); }
+  10%  { transform: translate3d(-5%, -5%, 0); }
+  30%  { transform: translate3d(3%, -8%, 0); }
+  50%  { transform: translate3d(-4%, 6%, 0); }
+  70%  { transform: translate3d(6%, 3%, 0); }
+  90%  { transform: translate3d(-3%, -4%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 8s steps(6) infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-spotlight { animation: none; opacity: 1; transform: translate(-50%, -40%); }
+  .kenburns, .breathe, .ember-drift, .grain { animation: none; }
+  .grain { opacity: 0.04; }
 }
 
 /* mono micro-label */
