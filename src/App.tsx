@@ -9,7 +9,6 @@ import { Cursor } from './components/Cursor'
 import { Loader } from './components/Loader'
 import { Magnetic } from './components/Magnetic'
 import { MaskText } from './components/MaskText'
-import { Marquee } from './components/Marquee'
 import { useLenis } from './lib/useLenis'
 import { cn } from './lib/utils'
 
@@ -290,11 +289,6 @@ export default function App() {
       <main>
         <Hero />
         <About />
-        <Marquee
-          items={['Years', 'Out now on mau5trap', 'Progressive house', 'Mixing & mastering']}
-          className="border-y border-white/[0.06] py-7"
-          itemClassName="font-serif text-3xl italic text-white/25 md:text-5xl"
-        />
         <Music />
         <Services />
         <Contact />

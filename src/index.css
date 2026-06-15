@@ -154,20 +154,12 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .has-cursor, .has-cursor a, .has-cursor button, .has-cursor [data-cursor] { cursor: none; }
 
-/* ---- Infinite marquee ---- */
-@keyframes marquee-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.marquee-track { animation: marquee-x 28s linear infinite; }
-.marquee-mask {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-}
-
 /* ---- Mask reveal (headings/lines) ---- */
 .mask-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.12em; }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-spotlight { animation: none; opacity: 1; transform: translate(-50%, -40%); }
-  .kenburns, .breathe, .ember-drift, .grain, .marquee-track { animation: none; }
+  .kenburns, .breathe, .ember-drift, .grain { animation: none; }
   .grain { opacity: 0.04; }
   .cursor-dot, .cursor-ring { display: none; }
   .has-cursor, .has-cursor a, .has-cursor button { cursor: auto; }
