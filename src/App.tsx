@@ -84,7 +84,7 @@ function Hero() {
   const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0])
 
   return (
-    <section ref={ref} id="home" className="relative flex min-h-svh items-center justify-center overflow-hidden">
+    <section ref={ref} id="home" className="relative flex min-h-svh items-end justify-center overflow-hidden pb-[12vh]">
       <Spotlight className="-top-40 left-0 md:-top-20 md:left-60" />
 
       <motion.div style={{ y: contentY, opacity: contentOpacity }} className="relative z-10 mx-auto w-full max-w-6xl px-6 text-center">

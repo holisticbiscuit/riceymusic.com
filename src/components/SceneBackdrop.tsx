@@ -6,8 +6,9 @@ import { cn } from '../lib/utils'
 // sections, while every layer keeps its slow Ken Burns drift. This is what makes
 // the whole page feel like one continuous moving film.
 
-const SCENES: { src: string; max: number }[] = [
-  { src: '/images/hero.webp', max: 0.85 },
+const SCENES: { src: string; max: number; pos?: string }[] = [
+  // hero crop biased toward the face (head sits high in this near-square frame)
+  { src: '/images/hero.webp', max: 0.85, pos: 'center 38%' },
   { src: '/images/about.webp', max: 0.4 },
   { src: '/images/music.webp', max: 0.5 },
   { src: '/images/services.webp', max: 0.38 },
@@ -20,20 +21,22 @@ function Layer({
   input,
   progress,
   slow,
+  pos = 'center',
 }: {
   src: string
   max: number
   input: number[]
   progress: MotionValue<number>
   slow?: boolean
+  pos?: string
 }) {
   const output = input.length === 2 ? (input[0] === 0 ? [max, 0] : [0, max]) : [0, max, 0]
   const opacity = useTransform(progress, input, output)
   return (
     <motion.div style={{ opacity }} className="absolute inset-0">
       <div
-        className={cn('absolute inset-[-12%] bg-cover bg-center kenburns', slow && 'kenburns-slow')}
-        style={{ backgroundImage: `url('${src}')` }}
+        className={cn('absolute inset-[-12%] bg-cover kenburns', slow && 'kenburns-slow')}
+        style={{ backgroundImage: `url('${src}')`, backgroundPosition: pos }}
       />
     </motion.div>
   )
@@ -49,7 +52,7 @@ export function SceneBackdrop() {
       {SCENES.map((s, i) => {
         const center = i * step
         const input = i === 0 ? [0, step] : i === n - 1 ? [1 - step, 1] : [center - step, center, center + step]
-        return <Layer key={s.src} src={s.src} max={s.max} input={input} progress={scrollYProgress} slow={i % 2 === 0} />
+        return <Layer key={s.src} src={s.src} max={s.max} input={input} progress={scrollYProgress} slow={i % 2 === 0} pos={s.pos} />
       })}
 
       {/* cinematic grade shared by every scene */}
