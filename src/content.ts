@@ -28,18 +28,34 @@ export const RELEASE = {
     'Ricey’s debut single on mau5trap. Progressive house. Personal. About time passing and everything you carry with you when it does.',
   links: [
     { name: 'Spotify', url: SPOTIFY_TRACK },
-    { name: 'Apple Music', url: '' },
+    { name: 'Apple Music', url: 'https://music.apple.com/gb/album/years-single/1896463665' },
     { name: 'Beatport', url: '' },
-    { name: 'YouTube', url: '' },
   ],
 }
 
-// Add real quotes only. Each needs the words and who said them.
-// e.g. { quote: 'Huge record.', source: 'deadmau5', context: 'mau5trap radio' }
-export const SUPPORT: { quote: string; source: string; context?: string }[] = []
+// Artists playing or backing the record. A clip renders when youtubeId is set;
+// a pull quote renders when quote is set. Both are optional.
+export const SUPPORT: {
+  source: string
+  context: string
+  youtubeId?: string
+  url?: string
+  quote?: string
+}[] = [
+  {
+    source: 'Chris Avantgarde',
+    context: 'playing Years',
+    youtubeId: 'OEvbWrIA5h0',
+    url: 'https://youtube.com/shorts/OEvbWrIA5h0',
+  },
+]
 
-// Paste a Spotify playlist URL here once it exists and the section appears.
-export const PLAYLIST = { url: '', title: 'On rotation' }
+// Spotify playlist. The section appears as soon as url is set.
+export const PLAYLIST = {
+  url: 'https://open.spotify.com/playlist/7B9dg1OxzWZ7CsrMD0txNx',
+  embedId: '7B9dg1OxzWZ7CsrMD0txNx',
+  title: 'On rotation',
+}
 
 export const RATES = [
   {

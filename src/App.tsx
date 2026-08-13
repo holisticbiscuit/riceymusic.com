@@ -26,9 +26,9 @@ import {
 // does not exist and never leaves a hole in the sequence.
 const ORDER = [
   'years',
+  ...(SUPPORT.length ? ['support'] : []),
   'about',
   'services',
-  ...(SUPPORT.length ? ['support'] : []),
   ...(PLAYLIST.url ? ['rotation'] : []),
   'contact',
 ]
@@ -311,15 +311,46 @@ function Support() {
     <section id="support" className="relative overflow-hidden py-36">
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-4xl px-6">
         <SectionLabel index={NUM.support}>Support</SectionLabel>
-        <div className="border-t border-white/[0.14]">
+        <p className={cn('mb-14 max-w-xl text-[1.25rem] leading-relaxed text-white/75', lift)}>
+          Artists playing the record.
+        </p>
+
+        <div className="space-y-16">
           {SUPPORT.map((s) => (
-            <figure key={s.quote} className="border-b border-white/[0.1] py-10">
-              <blockquote className={cn('font-serif text-[1.6rem] italic leading-snug text-ink md:text-[2rem]', lift)}>
-                &ldquo;{s.quote}&rdquo;
-              </blockquote>
-              <figcaption className="mt-5 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-white/55">
-                {s.source}
-                {s.context ? <span className="text-white/35"> &middot; {s.context}</span> : null}
+            <figure key={s.source} className="grid items-center gap-10 md:grid-cols-[260px_1fr]">
+              {s.youtubeId ? (
+                <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${s.youtubeId}`}
+                    title={`${s.source} ${s.context}`}
+                    loading="lazy"
+                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="aspect-[9/16] w-full"
+                    style={{ border: 0 }}
+                  />
+                </div>
+              ) : null}
+
+              <figcaption>
+                <div className={cn('eyebrow mb-4 flex items-center gap-2.5 text-white/60', lift)}>
+                  <span className="h-1 w-1 rounded-full bg-[var(--color-ember)]" /> {s.context}
+                </div>
+                <p className={cn('font-display text-[clamp(2rem,5vw,3.25rem)] leading-none text-ink', lift)}>
+                  {s.source}
+                </p>
+                {s.quote ? (
+                  <blockquote className={cn('mt-6 max-w-md font-serif text-[1.35rem] italic leading-snug text-white/85', lift)}>
+                    &ldquo;{s.quote}&rdquo;
+                  </blockquote>
+                ) : null}
+                {s.url ? (
+                  <Magnetic>
+                    <a href={s.url} target="_blank" rel="noopener" className={cn(btnGhost, 'mt-8')}>
+                      Watch
+                    </a>
+                  </Magnetic>
+                ) : null}
               </figcaption>
             </figure>
           ))}
@@ -338,6 +369,21 @@ function Rotation() {
         <p className={cn('mb-10 max-w-xl text-[1.25rem] leading-relaxed text-white/75', lift)}>
           What is being played, and what is being built from.
         </p>
+
+        {PLAYLIST.embedId ? (
+          <div className="mb-10 max-w-2xl overflow-hidden rounded-xl">
+            <iframe
+              src={`https://open.spotify.com/embed/playlist/${PLAYLIST.embedId}?utm_source=generator&theme=0`}
+              title={PLAYLIST.title}
+              width="100%"
+              height={352}
+              loading="lazy"
+              allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              style={{ border: 0 }}
+            />
+          </div>
+        ) : null}
+
         <Magnetic>
           <a href={PLAYLIST.url} target="_blank" rel="noopener" className={btnSolid}>
             <SpotifyIcon /> Open in Spotify
@@ -428,9 +474,9 @@ export default function App() {
       <main>
         <Hero />
         <Years />
+        <Support />
         <About />
         <Services />
-        <Support />
         <Rotation />
         <Contact />
       </main>
