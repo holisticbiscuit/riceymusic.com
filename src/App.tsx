@@ -9,14 +9,33 @@ import { Magnetic } from './components/Magnetic'
 import { MaskText } from './components/MaskText'
 import { useLenis } from './lib/useLenis'
 import { cn } from './lib/utils'
+import {
+  CREDITS,
+  EMAIL,
+  FACTS,
+  INSTAGRAM,
+  PLAYLIST,
+  RATES,
+  RELEASE,
+  SOUNDCLOUD,
+  SPOTIFY_TRACK,
+  SUPPORT,
+} from './content'
 
-const SPOTIFY = 'https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c'
-const INSTAGRAM = 'https://www.instagram.com/riceymusic/'
-const SOUNDCLOUD = 'https://soundcloud.com/riceymusic'
-const EMAIL = 'contact@riceymusic.com'
+// Section numbering is derived, so a section that has no content yet simply
+// does not exist and never leaves a hole in the sequence.
+const ORDER = [
+  'years',
+  'about',
+  'services',
+  ...(SUPPORT.length ? ['support'] : []),
+  ...(PLAYLIST.url ? ['rotation'] : []),
+  'contact',
+]
+const NUM: Record<string, string> = Object.fromEntries(
+  ORDER.map((id, i) => [id, String(i + 1).padStart(2, '0')]),
+)
 
-// Sections fade in place; the heading carries the vertical movement via MaskText,
-// so nothing animates twice on the same easing.
 const reveal = {
   initial: { opacity: 0 },
   whileInView: { opacity: 1 },
@@ -24,8 +43,12 @@ const reveal = {
   transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] as const },
 }
 
-// One shadow, tuned to lift text off a moving photograph without bolding hairlines.
 const lift = '[text-shadow:0_1px_14px_rgba(0,0,0,0.5)]'
+
+const btnBase =
+  'inline-flex items-center gap-2 rounded-md px-7 py-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] transition-colors duration-300'
+const btnSolid = cn(btnBase, 'bg-ink text-base hover:bg-white')
+const btnGhost = cn(btnBase, 'border border-white/25 text-ink hover:border-white/70 hover:bg-white/[0.06]')
 
 function SpotifyIcon() {
   return (
@@ -35,16 +58,10 @@ function SpotifyIcon() {
   )
 }
 
-// One button language across the whole site.
-const btnBase =
-  'inline-flex items-center gap-2 rounded-md px-7 py-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] transition-colors duration-300'
-const btnSolid = cn(btnBase, 'bg-ink text-base hover:bg-white')
-const btnGhost = cn(btnBase, 'border border-white/25 text-ink hover:border-white/70 hover:bg-white/[0.06]')
-
 function Nav() {
   const links: [string, string][] = [
+    ['#years', 'Years'],
     ['#about', 'About'],
-    ['#music', 'Music'],
     ['#services', 'Mastering'],
   ]
   const [scrolled, setScrolled] = useState(false)
@@ -91,19 +108,24 @@ function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '38%'])
   const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0])
-
   const letters = 'RICEY'.split('')
 
   return (
     <section ref={ref} id="home" className="relative flex min-h-svh items-end justify-center overflow-hidden pb-[12svh]">
       <motion.div style={{ y: contentY, opacity: contentOpacity }} className="relative z-10 mx-auto w-full max-w-6xl px-6 text-center">
-        <motion.p
+        <motion.a
+          href="#years"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ duration: 1, ease: 'easeOut', delay: 1.05 }}
-          className={cn('eyebrow mb-8 text-white/60', lift)}
+          className={cn('eyebrow group mb-8 inline-flex items-center gap-3 text-white/70 transition-colors hover:text-ink', lift)}
         >
-          Signed to mau5trap
-        </motion.p>
+          <span className="h-1 w-1 rounded-full bg-[var(--color-ember)]" />
+          Out now
+          <span className="text-white/35">/</span>
+          {RELEASE.title}
+          <span className="text-white/35">/</span>
+          {RELEASE.label}
+        </motion.a>
 
         <h1
           aria-label="Ricey"
@@ -131,10 +153,10 @@ function Hero() {
         </motion.p>
 
         <motion.p
-          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.85, duration: 0.8 }}
-          className={cn('mt-5 text-sm text-white/65', lift)}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8, duration: 0.9 }}
+          className={cn('mt-3 font-mono text-[0.68rem] uppercase tracking-[0.28em] text-white/50', lift)}
         >
-          Debut single &ldquo;Years&rdquo;, out now on mau5trap
+          London, UK
         </motion.p>
 
         <motion.div
@@ -142,8 +164,8 @@ function Hero() {
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <Magnetic>
-            <a href={SPOTIFY} target="_blank" rel="noopener" className={btnSolid}>
-              <SpotifyIcon /> Listen to Years
+            <a href={SPOTIFY_TRACK} target="_blank" rel="noopener" className={btnSolid}>
+              <SpotifyIcon /> Listen to {RELEASE.title}
             </a>
           </Magnetic>
           <Magnetic>
@@ -155,7 +177,6 @@ function Hero() {
   )
 }
 
-// Number and rule only. The heading below states the name once.
 function SectionLabel({ index, children }: { index: string; children: string }) {
   return (
     <div className="mb-11">
@@ -172,55 +193,41 @@ function SectionLabel({ index, children }: { index: string; children: string }) 
   )
 }
 
-function About() {
+function Years() {
+  const links = RELEASE.links.filter((l) => l.url)
   return (
-    <section id="about" className="relative overflow-hidden py-36">
-      <motion.div {...reveal} className="relative z-10 mx-auto max-w-3xl px-6">
-        <SectionLabel index="01">About</SectionLabel>
-        <div className={cn('space-y-6 text-[1.05rem] leading-[1.85] text-white/75', lift)}>
-          <p>
-            Ricey is a techno and progressive artist and audio engineer. What started as a last resort,
-            picking music after failing another subject at school, quickly became something far deeper.
-            What was meant to be a backup plan turned into <em className="font-serif not-italic text-ink">an obsession with sound</em>.
-          </p>
-          <p>
-            Now dedicated to crafting dark, immersive soundscapes that sit in the space between thought and
-            feeling. On the engineering side the philosophy is simple: truly enhance an artist&rsquo;s vision.
-            Every mix and master treated with the same precision and care.
-          </p>
-        </div>
-      </motion.div>
-    </section>
-  )
-}
-
-function Music() {
-  return (
-    <section id="music" className="relative overflow-hidden py-36">
-      <div className="ember-drift pointer-events-none absolute left-1/2 top-1/2 h-[460px] w-[460px] rounded-full bg-[var(--color-ember)] blur-[120px]" />
+    <section id="years" className="relative overflow-hidden py-36">
+      <div className="ember-drift pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[520px] rounded-full bg-[var(--color-ember)] blur-[130px]" />
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-5xl px-6">
-        <SectionLabel index="02">Music</SectionLabel>
-        <div className="grid items-center gap-14 md:grid-cols-[320px_1fr]">
-          <GlareCard className="mx-auto aspect-square w-full max-w-[320px]">
-            <img src="/images/years.jpg" alt="Years cover art" className="h-full w-full object-cover" />
+        <SectionLabel index={NUM.years}>{RELEASE.title}</SectionLabel>
+
+        <div className="grid items-start gap-14 md:grid-cols-[340px_1fr]">
+          <GlareCard className="mx-auto aspect-square w-full max-w-[340px]">
+            <img src={RELEASE.art} alt={`${RELEASE.title} cover art`} className="h-full w-full object-cover" />
           </GlareCard>
+
           <div>
-            <div className={cn('eyebrow mb-4 flex items-center gap-2.5 text-white/60', lift)}>
-              <span className="h-1 w-1 rounded-full bg-[var(--color-ember)]" /> Out now
+            <p className="font-mono text-[0.68rem] uppercase tracking-[0.24em] text-white/60">
+              {RELEASE.label} &middot; {RELEASE.year} &middot; {RELEASE.format}
+            </p>
+            <p className={cn('mt-6 max-w-md text-[1.05rem] leading-[1.85] text-white/80', lift)}>{RELEASE.blurb}</p>
+
+            <div className="mt-10 border-t border-white/[0.14]">
+              {links.map((l) => (
+                <a
+                  key={l.name}
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener"
+                  className="group flex items-center justify-between border-b border-white/[0.1] py-4 transition-colors hover:border-white/30"
+                >
+                  <span className="font-display text-lg text-ink">{l.name}</span>
+                  <span className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-white/50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1 group-hover:text-ink">
+                    Play &rarr;
+                  </span>
+                </a>
+              ))}
             </div>
-            <h3 className={cn('font-display text-5xl leading-none text-ink', lift)}>Years</h3>
-            <p className="mt-4 font-mono text-[0.68rem] uppercase tracking-[0.24em] text-white/55">
-              mau5trap &middot; 2026 &middot; Single
-            </p>
-            <p className={cn('mt-6 max-w-md text-[0.95rem] leading-[1.8] text-white/75', lift)}>
-              Ricey&rsquo;s debut single on mau5trap. Progressive house. Personal. About time passing and
-              everything you carry with you when it does.
-            </p>
-            <Magnetic>
-              <a href={SPOTIFY} target="_blank" rel="noopener" className={cn(btnSolid, 'mt-8')}>
-                <SpotifyIcon /> Listen on Spotify
-              </a>
-            </Magnetic>
           </div>
         </div>
       </motion.div>
@@ -228,38 +235,55 @@ function Music() {
   )
 }
 
+function About() {
+  return (
+    <section id="about" className="relative overflow-hidden py-36">
+      <motion.div {...reveal} className="relative z-10 mx-auto max-w-3xl px-6">
+        <SectionLabel index={NUM.about}>About</SectionLabel>
+        <div className={cn('space-y-6 text-[1.05rem] leading-[1.85] text-white/75', lift)}>
+          <p>
+            Ricey is a techno and progressive artist and audio engineer based in London. What started as a
+            last resort, picking music after failing another subject at school, quickly became something far
+            deeper. What was meant to be a backup plan turned into{' '}
+            <em className="font-serif not-italic text-ink">an obsession with sound</em>.
+          </p>
+          <p>
+            Now dedicated to crafting dark, immersive soundscapes that sit in the space between thought and
+            feeling. On the engineering side the philosophy is simple: truly enhance an artist&rsquo;s vision.
+            Every mix and master treated with the same precision and care.
+          </p>
+        </div>
+
+        <dl className="mt-14 grid grid-cols-2 gap-x-10 gap-y-8 border-t border-white/[0.14] pt-10 sm:grid-cols-4">
+          {FACTS.map(([label, value]) => (
+            <div key={label}>
+              <dt className="eyebrow mb-2.5 text-white/50">{label}</dt>
+              <dd className={cn('font-serif text-[1.05rem] leading-snug text-ink', lift)}>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </motion.div>
+    </section>
+  )
+}
+
 function Services() {
-  const rates: { name: string; desc: string; price: string; unit: string }[] = [
-    {
-      name: 'Mastering',
-      desc: 'A single track, finished for release. Loud where it should be, clear everywhere it plays.',
-      price: '£50',
-      unit: '/ track',
-    },
-    {
-      name: 'Stem Mastering',
-      desc: 'The same finish, working from grouped stems. More room to move when the mix calls for it.',
-      price: '£50',
-      unit: '+ £10 / stem',
-    },
-  ]
   return (
     <section id="services" className="relative overflow-hidden py-36">
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-4xl px-6">
-        <SectionLabel index="03">Mastering</SectionLabel>
+        <SectionLabel index={NUM.services}>Mastering</SectionLabel>
         <p className={cn('mb-6 max-w-xl text-[1.25rem] leading-relaxed text-white/75', lift)}>
-          Mastering, from the artist behind <em className="font-serif not-italic text-ink">Years</em>.
+          Mastering, from the artist behind <em className="font-serif not-italic text-ink">{RELEASE.title}</em>.
         </p>
         <p className="mb-14 max-w-xl font-mono text-[0.68rem] uppercase leading-[2] tracking-[0.2em] text-white/50">
-          Tracks mastered here have been released through Sony Music, Columbia Records, Polydor,
-          Virgin Music, Universal Music Group and The Orchard.
+          {CREDITS}
         </p>
 
         <div className="mb-16 border-t border-white/[0.14]">
-          {rates.map((r) => (
+          {RATES.map((r) => (
             <div
               key={r.name}
-              className="group grid gap-x-10 gap-y-4 border-b border-white/[0.1] py-9 md:grid-cols-[1fr_auto] md:items-end"
+              className="grid gap-x-10 gap-y-4 border-b border-white/[0.1] py-9 md:grid-cols-[1fr_auto] md:items-end"
             >
               <div>
                 <h3 className="font-display text-[1.75rem] leading-tight text-ink">{r.name}</h3>
@@ -281,20 +305,61 @@ function Services() {
   )
 }
 
+function Support() {
+  if (!SUPPORT.length) return null
+  return (
+    <section id="support" className="relative overflow-hidden py-36">
+      <motion.div {...reveal} className="relative z-10 mx-auto max-w-4xl px-6">
+        <SectionLabel index={NUM.support}>Support</SectionLabel>
+        <div className="border-t border-white/[0.14]">
+          {SUPPORT.map((s) => (
+            <figure key={s.quote} className="border-b border-white/[0.1] py-10">
+              <blockquote className={cn('font-serif text-[1.6rem] italic leading-snug text-ink md:text-[2rem]', lift)}>
+                &ldquo;{s.quote}&rdquo;
+              </blockquote>
+              <figcaption className="mt-5 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-white/55">
+                {s.source}
+                {s.context ? <span className="text-white/35"> &middot; {s.context}</span> : null}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </motion.div>
+    </section>
+  )
+}
+
+function Rotation() {
+  if (!PLAYLIST.url) return null
+  return (
+    <section id="rotation" className="relative overflow-hidden py-36">
+      <motion.div {...reveal} className="relative z-10 mx-auto max-w-4xl px-6">
+        <SectionLabel index={NUM.rotation}>{PLAYLIST.title}</SectionLabel>
+        <p className={cn('mb-10 max-w-xl text-[1.25rem] leading-relaxed text-white/75', lift)}>
+          What is being played, and what is being built from.
+        </p>
+        <Magnetic>
+          <a href={PLAYLIST.url} target="_blank" rel="noopener" className={btnSolid}>
+            <SpotifyIcon /> Open in Spotify
+          </a>
+        </Magnetic>
+      </motion.div>
+    </section>
+  )
+}
+
 function Contact() {
   const channels: [string, string, string][] = [
-    ['Email', EMAIL, `mailto:${EMAIL}`],
     ['Instagram', '@riceymusic', INSTAGRAM],
     ['SoundCloud', 'riceymusic', SOUNDCLOUD],
-    ['Spotify', 'Ricey', SPOTIFY],
+    ['Spotify', 'Ricey', SPOTIFY_TRACK],
   ]
   return (
     <section id="contact" className="relative overflow-hidden py-40">
       <motion.div {...reveal} className="relative z-10 mx-auto max-w-4xl px-6">
-        <SectionLabel index="04">Get in touch</SectionLabel>
+        <SectionLabel index={NUM.contact}>Get in touch</SectionLabel>
         <p className={cn('mb-14 max-w-xl text-[1.25rem] leading-relaxed text-white/75', lift)}>
-          Sending a track for mastering, or just want to talk music.
-          Either way, it reaches me directly.
+          Sending a track for mastering, or just want to talk music. Either way, it reaches me directly.
         </p>
 
         <a
@@ -305,8 +370,8 @@ function Contact() {
           <span className="mt-3 block h-px w-full origin-left scale-x-0 bg-white/40 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100" />
         </a>
 
-        <div className="mt-16 grid gap-y-7 border-t border-white/[0.12] pt-10 sm:grid-cols-2">
-          {channels.slice(1).map(([label, handle, href]) => (
+        <div className="mt-16 grid gap-y-7 border-t border-white/[0.12] pt-10 sm:grid-cols-3">
+          {channels.map(([label, handle, href]) => (
             <div key={label}>
               <div className="eyebrow mb-2 text-white/50">{label}</div>
               <a
@@ -334,7 +399,7 @@ function Footer() {
           <nav aria-label="Elsewhere" className="flex flex-wrap gap-7 font-mono text-[0.68rem] uppercase tracking-[0.2em] text-white/60">
             <a href={INSTAGRAM} target="_blank" rel="noopener" className="transition-colors hover:text-ink">Instagram</a>
             <a href={SOUNDCLOUD} target="_blank" rel="noopener" className="transition-colors hover:text-ink">SoundCloud</a>
-            <a href={SPOTIFY} target="_blank" rel="noopener" className="transition-colors hover:text-ink">Spotify</a>
+            <a href={SPOTIFY_TRACK} target="_blank" rel="noopener" className="transition-colors hover:text-ink">Spotify</a>
             <a href={`mailto:${EMAIL}`} className="transition-colors hover:text-ink">Email</a>
           </nav>
         </div>
@@ -353,7 +418,7 @@ export default function App() {
       <Loader />
       <Cursor />
       <a
-        href="#about"
+        href="#years"
         className="sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[200] focus:rounded focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-base"
       >
         Skip to content
@@ -362,9 +427,11 @@ export default function App() {
       <SceneBackdrop />
       <main>
         <Hero />
+        <Years />
         <About />
-        <Music />
         <Services />
+        <Support />
+        <Rotation />
         <Contact />
       </main>
       <Footer />
