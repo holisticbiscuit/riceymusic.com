@@ -29,7 +29,7 @@ export const RELEASE = {
   links: [
     { name: 'Spotify', url: SPOTIFY_TRACK },
     { name: 'Apple Music', url: 'https://music.apple.com/gb/album/years-single/1896463665' },
-    { name: 'Beatport', url: '' },
+    { name: 'Beatport', url: 'https://www.beatport.com/track/years/28866996' },
   ],
 }
 
