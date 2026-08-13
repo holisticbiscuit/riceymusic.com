@@ -8,7 +8,7 @@ export function Loader() {
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const t = setTimeout(() => setDone(true), reduce ? 0 : 1700)
+    const t = setTimeout(() => setDone(true), reduce ? 0 : 1000)
     return () => clearTimeout(t)
   }, [])
 
@@ -18,7 +18,7 @@ export function Loader() {
         <motion.div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-base"
           exit={{ y: '-100%' }}
-          transition={{ duration: 0.95, ease: [0.76, 0, 0.24, 1] }}
+          transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
         >
           <motion.span
             className="font-display text-2xl text-ink"
@@ -32,9 +32,9 @@ export function Loader() {
             className="absolute bottom-10 left-1/2 -translate-x-1/2 font-mono text-[0.6rem] uppercase tracking-[0.3em] text-white/35"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
+            transition={{ delay: 0.35, duration: 0.7 }}
           >
-            mau5trap
+            Signed to mau5trap
           </motion.span>
         </motion.div>
       )}

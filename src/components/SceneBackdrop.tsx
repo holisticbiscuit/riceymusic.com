@@ -8,11 +8,11 @@ import { cn } from '../lib/utils'
 
 const SCENES: { src: string; max: number; pos?: string }[] = [
   // hero crop biased toward the face (head sits high in this near-square frame)
-  { src: '/images/hero.webp', max: 0.85, pos: 'center 38%' },
-  { src: '/images/about.webp', max: 0.4 },
-  { src: '/images/music.webp', max: 0.5 },
-  { src: '/images/services.webp', max: 0.38 },
-  { src: '/images/contact.webp', max: 0.46 },
+  { src: '/images/hero.webp', max: 0.9, pos: 'center 38%' },
+  { src: '/images/about.webp', max: 0.62 },
+  { src: '/images/music.webp', max: 0.7 },
+  { src: '/images/services.webp', max: 0.58 },
+  { src: '/images/contact.webp', max: 0.66 },
 ]
 
 function Layer({
@@ -56,8 +56,8 @@ export function SceneBackdrop() {
       })}
 
       {/* cinematic grade shared by every scene */}
-      <div className="absolute inset-0 bg-gradient-to-b from-base/55 via-base/25 to-base/78" />
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(125% 85% at 50% 38%, transparent 42%, var(--color-base) 100%)' }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-base/50 via-base/20 to-base/72" />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(130% 90% at 50% 38%, transparent 48%, var(--color-base) 100%)' }} />
       {/* top scrim so the nav stays legible over any scene */}
       <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-base/75 to-transparent" />
     </div>

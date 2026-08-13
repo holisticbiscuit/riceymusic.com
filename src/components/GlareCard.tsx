@@ -14,8 +14,8 @@ export function GlareCard({ children, className }: { children: ReactNode; classN
     const r = el.getBoundingClientRect()
     const px = (e.clientX - r.left) / r.width
     const py = (e.clientY - r.top) / r.height
-    state.current.rx = (py - 0.5) * -10
-    state.current.ry = (px - 0.5) * 10
+    state.current.rx = (py - 0.5) * -4
+    state.current.ry = (px - 0.5) * 4
     el.style.setProperty('--rx', state.current.rx.toFixed(2) + 'deg')
     el.style.setProperty('--ry', state.current.ry.toFixed(2) + 'deg')
     el.style.setProperty('--mx', (px * 100).toFixed(1) + '%')
@@ -55,7 +55,7 @@ export function GlareCard({ children, className }: { children: ReactNode; classN
           style={{
             opacity: 'var(--glare, 0)',
             background:
-              'radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.22), transparent 45%)',
+              'radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.10), transparent 55%)',
           }}
         />
       </div>

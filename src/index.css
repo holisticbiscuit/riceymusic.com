@@ -12,10 +12,10 @@
   --color-ink-soft: #e6e3de;
   --color-ember: #c41e2a; /* the "Years" red — the single accent */
 
-  --font-display: "Bodoni Moda", "Didot", serif;
+  --font-display: "Bodoni Moda Variable", "Bodoni Moda", "Didot", serif;
   --font-serif: "Instrument Serif", Georgia, serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-body: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
@@ -23,9 +23,12 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* Lenis owns scrolling; native smooth would fight it on anchor jumps. */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Bodoni carries an optical-size axis: let the browser pick the right cut
+     per size so display type gets true hairlines, not scaled-up text shapes. */
+  font-optical-sizing: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
