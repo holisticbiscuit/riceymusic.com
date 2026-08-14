@@ -134,6 +134,22 @@ button:focus:not(:focus-visible) { outline: none; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain-shift 8s steps(6) infinite;
   will-change: transform;
+  /* Grain density rises with the high end while the record plays, and a touch
+     with scroll speed. Both variables sit at 0 until something sets them, so
+     this is the current value when the page is silent and still. */
+  opacity: calc(0.05 + var(--a-air, 0) * 0.06 + var(--scroll-v, 0) * 0.02);
+}
+
+/* Exposure lift driven by the low end. A separate fixed plate rather than a
+   filter on the backdrop, so it never forces the photo layers to repaint. */
+.audio-bloom {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(120% 75% at 50% 45%, rgba(244, 241, 236, 0.16), transparent 62%);
+  opacity: calc(var(--a-low, 0) * 0.85);
+  mix-blend-mode: screen;
 }
 
 /* ---- Custom cursor ---- */

@@ -7,6 +7,8 @@ import { Cursor } from './components/Cursor'
 import { Loader } from './components/Loader'
 import { Magnetic } from './components/Magnetic'
 import { MaskText } from './components/MaskText'
+import { PlayTheRecord } from './components/PlayTheRecord'
+import { ReactiveWordmark } from './components/ReactiveWordmark'
 import { useLenis } from './lib/useLenis'
 import { cn } from './lib/utils'
 import {
@@ -108,7 +110,6 @@ function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '38%'])
   const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0])
-  const letters = 'RICEY'.split('')
 
   return (
     <section ref={ref} id="home" className="relative flex min-h-svh items-end justify-center overflow-hidden pb-[12svh]">
@@ -127,23 +128,10 @@ function Hero() {
           {RELEASE.label}
         </motion.a>
 
-        <h1
-          aria-label="Ricey"
+        <ReactiveWordmark
+          text="RICEY"
           className={cn('font-display text-[clamp(3rem,13vw,10rem)] font-medium leading-[0.9] tracking-[0.12em] text-ink', lift)}
-        >
-          {letters.map((ch, i) => (
-            <motion.span
-              key={i}
-              aria-hidden="true"
-              className="inline-block"
-              initial={{ opacity: 0, y: '0.28em', filter: 'blur(12px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ duration: 1.1, delay: 1.15 + i * 0.075, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {ch}
-            </motion.span>
-          ))}
-        </h1>
+        />
 
         <motion.p
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.7, duration: 0.9 }}
@@ -171,6 +159,13 @@ function Hero() {
           <Magnetic>
             <a href="#services" className={btnGhost}>Mastering</a>
           </Magnetic>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.3, duration: 1 }}
+          className="mt-12 flex justify-center"
+        >
+          <PlayTheRecord src="/audio/years-excerpt.mp3" />
         </motion.div>
       </motion.div>
     </section>
@@ -481,6 +476,7 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      <div className="audio-bloom" aria-hidden />
       <div className="grain" aria-hidden />
     </MotionConfig>
   )

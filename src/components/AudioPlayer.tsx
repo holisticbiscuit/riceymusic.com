@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { connect as connectAudio, setActive as setAudioActive, visualsEnabled } from '../lib/audioBus'
 
 type Track = { name: string; title: string; artist: string; before: string; after: string }
 
@@ -201,8 +202,19 @@ export function AudioPlayer() {
       play() {
         arm()
         const a = active()
-        if (isPlaying) { a.pause(); isPlaying = false; setPlaying(false) }
-        else a.play().then(() => { isPlaying = true; setPlaying(true) }).catch((err) => { if (err?.name !== 'AbortError') console.warn('audio play failed', err) })
+        if (isPlaying) {
+          a.pause(); isPlaying = false; setPlaying(false)
+          setAudioActive(false)
+        } else {
+          // Route both elements through the shared graph so the page reacts to
+          // this player too: flipping Before to After visibly changes the grain
+          // and the exposure, because the master is louder and brighter.
+          if (visualsEnabled()) { connectAudio(before); connectAudio(after) }
+          a.play().then(() => {
+            isPlaying = true; setPlaying(true)
+            if (visualsEnabled()) setAudioActive(true)
+          }).catch((err) => { if (err?.name !== 'AbortError') console.warn('audio play failed', err) })
+        }
       },
       volume(x: number) { before.volume = after.volume = x },
     }
@@ -210,6 +222,7 @@ export function AudioPlayer() {
 
     return () => {
       before.pause(); after.pause()
+      setAudioActive(false)
       cancelAnimationFrame(raf)
       io?.disconnect()
       canvas.removeEventListener('mousemove', onMove)

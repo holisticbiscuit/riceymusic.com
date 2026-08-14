@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import Lenis from 'lenis'
+import { tick as audioTick } from './audioBus'
 
 // Buttery momentum scrolling — the backbone of the "flowy" feel.
 // Drives the page via real scroll, so motion's useScroll stays in sync.
@@ -16,9 +17,27 @@ export function useLenis() {
 
     ;(window as unknown as { __lenis?: Lenis }).__lenis = lenis
 
+    // Scroll velocity, smoothed, published as a CSS variable. Lets the page
+    // react to how fast you scroll, not only where you are.
+    const root = document.documentElement
+    let vel = 0
+    let lastY = window.scrollY
+    let lastT = performance.now()
+
     let raf = 0
     const loop = (time: number) => {
       lenis.raf(time)
+
+      const dt = Math.max(1, time - lastT)
+      const y = window.scrollY
+      // px per ms, normalised against a brisk flick, then eased.
+      const raw = Math.min(1, Math.abs(y - lastY) / dt / 3.2)
+      vel += (raw - vel) * (raw > vel ? 0.28 : 0.06)
+      lastY = y
+      lastT = time
+      root.style.setProperty('--scroll-v', vel.toFixed(3))
+
+      audioTick()
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
