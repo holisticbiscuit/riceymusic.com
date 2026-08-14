@@ -9,6 +9,7 @@ import { Magnetic } from './components/Magnetic'
 import { MaskText } from './components/MaskText'
 import { PlayTheRecord } from './components/PlayTheRecord'
 import { ReactiveWordmark } from './components/ReactiveWordmark'
+import { YearsPlayer } from './components/YearsPlayer'
 import { useLenis } from './lib/useLenis'
 import { cn } from './lib/utils'
 import {
@@ -46,6 +47,8 @@ const reveal = {
 }
 
 const lift = '[text-shadow:0_1px_14px_rgba(0,0,0,0.5)]'
+
+const EXCERPT = '/audio/years-excerpt.mp3'
 
 const btnBase =
   'inline-flex items-center gap-2 rounded-md px-7 py-3 text-[0.7rem] font-medium uppercase tracking-[0.16em] transition-colors duration-300'
@@ -165,7 +168,7 @@ function Hero() {
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.3, duration: 1 }}
           className="mt-12 flex justify-center"
         >
-          <PlayTheRecord src="/audio/years-excerpt.mp3" />
+          <PlayTheRecord src={EXCERPT} />
         </motion.div>
       </motion.div>
     </section>
@@ -206,6 +209,8 @@ function Years() {
               {RELEASE.label} &middot; {RELEASE.year} &middot; {RELEASE.format}
             </p>
             <p className={cn('mt-6 max-w-md text-[1.05rem] leading-[1.85] text-white/80', lift)}>{RELEASE.blurb}</p>
+
+            <YearsPlayer src={EXCERPT} className="mt-8" />
 
             <div className="mt-10 border-t border-white/[0.14]">
               {links.map((l) => (
