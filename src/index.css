@@ -173,6 +173,58 @@ button:focus:not(:focus-visible) { outline: none; }
 }
 .has-cursor, .has-cursor a, .has-cursor button, .has-cursor [data-cursor] { cursor: none; }
 
+/* ---- Volume slider ----
+   A hairline track with a small ink thumb, so it belongs to the same
+   typographic language as the rest of the player. The filled portion is
+   driven by --vol, set inline from the current value. */
+.vol-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+.vol-range::-webkit-slider-runnable-track {
+  height: 1px;
+  border-radius: 1px;
+  background: linear-gradient(
+    to right,
+    var(--color-ink) 0,
+    var(--color-ink) var(--vol, 80%),
+    rgba(244, 241, 236, 0.22) var(--vol, 80%),
+    rgba(244, 241, 236, 0.22) 100%
+  );
+}
+.vol-range::-moz-range-track {
+  height: 1px;
+  border-radius: 1px;
+  background: rgba(244, 241, 236, 0.22);
+}
+.vol-range::-moz-range-progress {
+  height: 1px;
+  border-radius: 1px;
+  background: var(--color-ink);
+}
+.vol-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 9px;
+  height: 9px;
+  margin-top: -4px;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vol-range::-moz-range-thumb {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-ink);
+}
+.vol-range:hover::-webkit-slider-thumb,
+.vol-range:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.35);
+}
+
 /* ---- Mask reveal (headings/lines) ---- */
 .mask-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.12em; }
 

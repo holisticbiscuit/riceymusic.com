@@ -6,7 +6,15 @@ import { cn } from '../lib/utils'
 // the full player lives in the release section. Both drive the same element.
 export function PlayTheRecord({ src, className }: { src: string; className?: string }) {
   const barRef = useRef<HTMLSpanElement>(null)
-  const [s, setS] = useState<RecordState>({ playing: false, time: 0, duration: 0, ready: false, failed: false })
+  const [s, setS] = useState<RecordState>({
+    playing: false,
+    time: 0,
+    duration: 0,
+    ready: false,
+    failed: false,
+    volume: 0.8,
+    muted: false,
+  })
 
   useEffect(() => {
     init(src)

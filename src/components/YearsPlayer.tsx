@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { fmt, getPeaks, init, loadPeaks, seek, subscribe, toggle, type RecordState } from '../lib/recordPlayer'
+import {
+  fmt,
+  getPeaks,
+  init,
+  loadPeaks,
+  seek,
+  setVolume,
+  subscribe,
+  toggle,
+  toggleMute,
+  type RecordState,
+} from '../lib/recordPlayer'
 import { cn } from '../lib/utils'
 
 // The record's own player. Real decoded peaks, scrubbable, and wired to the same
@@ -7,7 +18,15 @@ import { cn } from '../lib/utils'
 export function YearsPlayer({ src, className }: { src: string; className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const [s, setS] = useState<RecordState>({ playing: false, time: 0, duration: 0, ready: false, failed: false })
+  const [s, setS] = useState<RecordState>({
+    playing: false,
+    time: 0,
+    duration: 0,
+    ready: false,
+    failed: false,
+    volume: 0.8,
+    muted: false,
+  })
   const [hover, setHover] = useState<number | null>(null)
 
   useEffect(() => {
@@ -122,13 +141,53 @@ export function YearsPlayer({ src, className }: { src: string; className?: strin
         </button>
 
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-baseline justify-between gap-4">
+          <div className="mb-2 flex items-center justify-between gap-4">
             <span className="truncate font-mono text-[0.62rem] uppercase tracking-[0.24em] text-white/60">
               {s.failed ? 'Unavailable' : 'Years · excerpt'}
             </span>
-            <span className="shrink-0 font-mono text-[0.62rem] tabular-nums text-white/50">
-              {fmt(s.time)} / {fmt(s.duration)}
-            </span>
+
+            <div className="flex shrink-0 items-center gap-3">
+              <div className="group/vol flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  aria-label={s.muted || s.volume === 0 ? 'Unmute' : 'Mute'}
+                  aria-pressed={s.muted}
+                  className="text-white/55 transition-colors hover:text-ink"
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                    <path d="M4 9.5v5h3.2L12 18.5v-13L7.2 9.5H4Z" fill="currentColor" stroke="none" />
+                    {s.muted || s.volume === 0 ? (
+                      <>
+                        <path d="M16 9.5l4.5 5M20.5 9.5l-4.5 5" strokeLinecap="round" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M15.5 9.2a3.8 3.8 0 0 1 0 5.6" strokeLinecap="round" />
+                        {s.volume > 0.55 ? <path d="M18 7a7 7 0 0 1 0 10" strokeLinecap="round" /> : null}
+                      </>
+                    )}
+                  </svg>
+                </button>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={s.muted ? 0 : s.volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  aria-label="Volume"
+                  aria-valuetext={`${Math.round((s.muted ? 0 : s.volume) * 100)} percent`}
+                  className="vol-range h-4 w-16 cursor-pointer sm:w-20"
+                  style={{ ['--vol' as string]: `${(s.muted ? 0 : s.volume) * 100}%` }}
+                />
+              </div>
+
+              <span className="font-mono text-[0.62rem] tabular-nums text-white/50">
+                {fmt(s.time)} / {fmt(s.duration)}
+              </span>
+            </div>
           </div>
 
           <canvas

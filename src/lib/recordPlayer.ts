@@ -14,7 +14,11 @@ export type RecordState = {
   duration: number
   ready: boolean
   failed: boolean
+  volume: number
+  muted: boolean
 }
+
+const VOLUME_KEY = 'ricey:volume'
 
 // Peaks are decoded once at a fixed resolution and downsampled at draw time.
 // Deriving the resolution from element width would mean re-fetching and
@@ -26,7 +30,25 @@ let src = ''
 let peaks: number[] | null = null
 let decoding = false
 
-const state: RecordState = { playing: false, time: 0, duration: 0, ready: false, failed: false }
+function storedVolume() {
+  try {
+    const v = parseFloat(localStorage.getItem(VOLUME_KEY) ?? '')
+    if (isFinite(v) && v >= 0 && v <= 1) return v
+  } catch {
+    // private mode or storage disabled
+  }
+  return 0.8
+}
+
+const state: RecordState = {
+  playing: false,
+  time: 0,
+  duration: 0,
+  ready: false,
+  failed: false,
+  volume: storedVolume(),
+  muted: false,
+}
 const listeners = new Set<(s: RecordState) => void>()
 
 // Subscribers get a fresh snapshot: React bails out of a setState that receives
@@ -60,6 +82,7 @@ export function init(source: string) {
   el.crossOrigin = 'anonymous'
   el.preload = 'none'
   el.loop = false
+  el.volume = state.volume
 
   el.addEventListener('timeupdate', () => {
     state.time = el!.currentTime
@@ -141,6 +164,26 @@ export async function toggle() {
     state.playing = false
     emit()
   }
+}
+
+export function setVolume(v: number) {
+  const next = Math.max(0, Math.min(1, v))
+  state.volume = next
+  // Moving the slider off zero is an implicit unmute.
+  if (next > 0) state.muted = false
+  if (el) el.volume = state.muted ? 0 : next
+  try {
+    localStorage.setItem(VOLUME_KEY, String(next))
+  } catch {
+    // storage unavailable; volume simply does not persist
+  }
+  emit()
+}
+
+export function toggleMute() {
+  state.muted = !state.muted
+  if (el) el.volume = state.muted ? 0 : state.volume
+  emit()
 }
 
 export function seek(ratio: number) {
