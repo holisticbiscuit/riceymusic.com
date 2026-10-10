@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 
 .claude/settings.local.json
+
+# Cloudflare Worker
+worker/node_modules
+worker/.dev.vars
+worker/.wrangler
+.env*.local

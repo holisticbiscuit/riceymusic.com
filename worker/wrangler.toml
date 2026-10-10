@@ -1,0 +1,14 @@
+name = "ricey-api"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://riceymusic.com,https://www.riceymusic.com,http://localhost:5173,http://localhost:4173"
+
+# Fill in the id printed by `npx wrangler kv namespace create CREDITS`.
+[[kv_namespaces]]
+binding = "CREDITS"
+id = "REPLACE_ME"
+
+# Secrets, set with `npx wrangler secret put <NAME>` (never committed):
+#   ADMIN_USER, ADMIN_PASS, TOKEN_SECRET
