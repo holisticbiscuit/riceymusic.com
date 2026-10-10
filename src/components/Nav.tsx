@@ -51,8 +51,8 @@ export function Nav() {
           className="flex h-11 w-11 items-center justify-center md:hidden"
         >
           <span className="relative block h-3 w-6">
-            <span className={cn('absolute left-0 top-0 h-px w-6 bg-ink transition-transform', open && 'translate-y-1.5 rotate-45')} />
-            <span className={cn('absolute bottom-0 left-0 h-px w-6 bg-ink transition-transform', open && '-translate-y-1.5 -rotate-45')} />
+            <span className={cn('absolute left-0 top-0 h-px w-6 bg-ink transition-transform', open && 'translate-y-[5.5px] rotate-45')} />
+            <span className={cn('absolute bottom-0 left-0 h-px w-6 bg-ink transition-transform', open && '-translate-y-[5.5px] -rotate-45')} />
           </span>
         </button>
       </nav>
