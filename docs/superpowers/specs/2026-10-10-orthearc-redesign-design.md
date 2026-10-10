@@ -1,7 +1,7 @@
-# Ricey site redesign: orthearc structure, Years world
+# Ricey site redesign: orthearc structure, scarf-blue world
 
 Date: 2026-10-10
-Status: approved in brainstorming
+Status: approved in brainstorming; visual direction revised and picked in prototype
 
 ## Goal
 
@@ -11,30 +11,41 @@ admin panel for adding credits, with cover art pulled automatically.
 
 ## Reference: what we take from orthearc
 
-- Full-screen cinematic hero: large wordmark, spaced-caps tagline, one pill Contact button.
-- Edge-to-edge, gapless grid of square release covers ("Selected discography").
-- "All credits" pill under the grid, then a "Hear the difference" call to action that links
-  to a Before / After page.
-- Separate pages instead of one long scroll.
+- A homepage that is one full-screen hero: large wordmark, spaced-caps tagline, one pill
+  Contact button. No scrolling on the homepage.
+- Edge-to-edge, gapless grid of square release covers, on its own Credits page.
+- A Before / After page ("Hear the difference").
+- Separate pages for every section.
 - Small-caps nav links, outlined Contact pill top right.
-- Covers carry the colour; the chrome stays near-monochrome.
+- Covers carry the colour; the chrome stays restrained.
 
-What we do not take: the starfield, planet arc, navy palette and thin sans wordmark.
+What we do not take: the starfield, the planet arc, the navy palette and the thin sans wordmark.
+The site must not read as a copy of orthearc.
 
-## Visual world ("Years")
+## Visual world (decided in the prototype, 2026-10-10)
 
-- Background near-black. One accent: the deep red of the Years cover (`public/images/years.jpg`).
-- Bodoni Moda for wordmark and headings; Inter for small text and UI.
-- Hero background: a slow red glow or texture in place of orthearc's planet arc. The exact
-  treatment is chosen in the prototype step.
-- Keep the existing motion layer where it fits: Lenis smooth scroll, reveals, loader.
+- **Hero photo:** `public/images/portrait.webp` (from `RICEY PHOTO 4.png`: studio portrait on
+  black, cobalt scarf). Shown in its natural colour on black, no tint. Only a dark fade at the
+  bottom so the type reads. Wordmark, tagline and Contact pill sit low, over the scarf.
+- **Inner pages take the scarf's colour**, measured from the photo:
+  - `--color-scarf: #01289a` (lit folds)
+  - `--color-scarf-deep: #020933` (shadow): the page background
+  - `--color-scarf-lift: #0b4de8` (rim light)
+  - Treatment ("deep scarf"): page is scarf-deep, with a radial glow of scarf rising from the top
+    behind the page title. Small accent text (roles on hover): `#5b86ff`.
+- The Years red is retired as the site accent.
+- Bodoni Moda for wordmark and headings; Inter for UI; JetBrains Mono for spaced-caps labels.
+- Keep a light film grain. Lenis and reveals where they fit; drop the scroll-driven backdrop.
+
+Prototype of record: `.prototypes/aed9204d` (git-ignored): `home/J` (hero) and `credits/B`
+(credits page).
 
 ## Pages
 
 | Route | Content |
 |---|---|
-| `/` | Hero (RICEY, "Artist · Producer · Mixing · Mastering", Contact pill). Selected credits grid. All credits pill. Hear the difference pill. |
-| `/credits` | All releases in the grid. Merged versions show "2 versions". |
+| `/` | Hero only: portrait, RICEY, "Artist · Producer · Mixing · Mastering", Contact pill. Fits one screen, no scroll. |
+| `/credits` | Page title "Credits", release count, then all releases in the gapless grid (4 / 3 / 2 across). Merged versions show "2 versions". |
 | `/artist` | Years release, YearsPlayer, Support (Chris Avantgarde clip), On rotation playlist. |
 | `/before-after` | Track 1 and Track 2 from `public/audio/`, A/B toggle between Before and After. |
 | `/services` | Mastering £50 / track, Stem Mastering £50 + £10 / stem, the labels credits line. |
@@ -47,9 +58,9 @@ Tile links to the release when a link is known.
 
 ## Credits data
 
-Seed: `docs/superpowers/specs/credits-seed.json`, 20 releases transcribed from Muso, in
-Muso popularity order. Excluded by request: Apocalypse, CAN'T STOP, Last Dance, PLAY ROUGH,
-Feel. Versions are merged into one entry with a `versions` list.
+Seed: `docs/superpowers/specs/credits-seed.json`, 17 releases transcribed from Muso, in
+Muso popularity order, each with a cover in `public/images/credits/`. Excluded by request:
+Apocalypse, CAN'T STOP, Last Dance, PLAY ROUGH, Feel, and all Crainaz releases. Versions are merged into one entry with a `versions` list.
 
 Credit shape:
 
@@ -99,7 +110,7 @@ React Router. GitHub Pages deep links handled by copying `index.html` to `404.ht
 
 - API unreachable: public pages use the bundled seed; admin shows a clear error.
 - Lookup fails: admin lets the user fill fields and paste a cover URL by hand.
-- Missing cover: tile shows title and artist on a dark red field.
+- Missing cover: tile shows title and artist on a scarf-blue field.
 
 ## Testing and verification
 
@@ -109,7 +120,7 @@ React Router. GitHub Pages deep links handled by copying `index.html` to `404.ht
 
 ## Build order
 
-1. Prototype the homepage: Current plus Years-world variants; user picks one.
+1. Prototype the homepage and credits page (done: home/J, credits/B).
 2. Build the chosen design across all pages, with the seed credits.
 3. Worker and admin.
 4. Verify on desktop and phone, then deploy.

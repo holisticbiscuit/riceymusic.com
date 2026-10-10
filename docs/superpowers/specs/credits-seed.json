@@ -1,5 +1,5 @@
 {
-  "_note": "Transcribed from muso.ai credits screenshots on 2026-10-10, in Muso popularity order. Excluded at user request: Apocalypse, CAN'T STOP, Last Dance, PLAY ROUGH. Hidden roles confirmed by user for Years + SERGIO DO CARMO tracks (Composer, Producer, Mixing, Mastering). Feel removed (no mastering/mixing). Versions merged into one tile per release.",
+  "_note": "Transcribed from muso.ai credits screenshots on 2026-10-10, in Muso popularity order. Excluded at user request: Apocalypse, CAN'T STOP, Last Dance, PLAY ROUGH. Hidden roles confirmed by user for Years + SERGIO DO CARMO tracks (Composer, Producer, Mixing, Mastering). Feel removed (no mastering/mixing). Versions merged into one tile per release. Crainaz releases removed at user request (2026-10-10).",
   "credits": [
     {
       "title": "It Goes Like",
@@ -8,7 +8,10 @@
         "Mastering",
         "Mixing"
       ],
-      "date": "2025-10-17"
+      "date": "2025-10-17",
+      "id": "blinded-state-it-goes-like",
+      "art": "/images/credits/blinded-state-it-goes-like.jpg",
+      "url": "https://music.apple.com/us/album/it-goes-like/1843652811?i=1843652813&uo=4"
     },
     {
       "title": "Years",
@@ -19,7 +22,10 @@
         "Mixing",
         "Mastering"
       ],
-      "date": "2026-06-05"
+      "date": "2026-06-05",
+      "id": "ricey-years",
+      "art": "/images/credits/ricey-years.jpg",
+      "url": "https://music.apple.com/us/album/years/1896463665?i=6767300213&uo=4"
     },
     {
       "title": "Ms Westminster",
@@ -27,7 +33,10 @@
       "roles": [
         "Mastering"
       ],
-      "date": "2026-05-28"
+      "date": "2026-05-28",
+      "id": "ryan-de-la-cruz-ms-westminster",
+      "art": "/images/credits/ryan-de-la-cruz-ms-westminster.jpg",
+      "url": "https://music.apple.com/us/album/ms-westminster/1895732840?i=6764323688&uo=4"
     },
     {
       "title": "In The Club",
@@ -41,7 +50,10 @@
       "versions": [
         "In The Club",
         "In The Club (Extended Mix)"
-      ]
+      ],
+      "id": "ricey-in-the-club",
+      "art": "/images/credits/ricey-in-the-club.jpg",
+      "url": "https://music.apple.com/us/album/in-the-club/1689484689?i=1689484690&uo=4"
     },
     {
       "title": "Spiller",
@@ -50,7 +62,10 @@
         "Mastering",
         "Mixing"
       ],
-      "date": "2025-01-03"
+      "date": "2025-01-03",
+      "id": "selecta-spiller",
+      "art": "/images/credits/selecta-spiller.jpg",
+      "url": "https://music.apple.com/us/album/spiller/1783358872?i=1783358874&uo=4"
     },
     {
       "title": "Carry The World",
@@ -62,7 +77,10 @@
       "versions": [
         "Carry The World",
         "Carry The World (Extended Mix)"
-      ]
+      ],
+      "id": "lypo-carry-the-world",
+      "art": "/images/credits/lypo-carry-the-world.jpg",
+      "url": "https://music.apple.com/us/album/carry-the-world/1686667437?i=1686667438&uo=4"
     },
     {
       "title": "Let Me Go",
@@ -71,7 +89,10 @@
         "Mastering",
         "Mixing"
       ],
-      "date": "2025-06-20"
+      "date": "2025-06-20",
+      "id": "dystil-let-me-go",
+      "art": "/images/credits/dystil-let-me-go.jpg",
+      "url": "https://music.apple.com/us/album/let-me-go/1816000473?i=1816000474&uo=4"
     },
     {
       "title": "Anemoia",
@@ -80,7 +101,10 @@
         "Mastering",
         "Mixing"
       ],
-      "date": "2025-09-24"
+      "date": "2025-09-24",
+      "id": "penultimate-anemoia",
+      "art": "/images/credits/penultimate-anemoia.jpg",
+      "url": "https://music.apple.com/us/album/anemoia/1841924545?i=1841924546"
     },
     {
       "title": "Get Down",
@@ -89,16 +113,10 @@
         "Mastering",
         "Mixing"
       ],
-      "date": "2025-05-09"
-    },
-    {
-      "title": "DANSER PÅ TORNER",
-      "artist": "Crainaz",
-      "roles": [
-        "Mastering",
-        "Mixing"
-      ],
-      "date": "2025-11-21"
+      "date": "2025-05-09",
+      "id": "dystil-get-down",
+      "art": "/images/credits/dystil-get-down.jpg",
+      "url": "https://music.apple.com/us/album/get-down/1807553774?i=1807553776&uo=4"
     },
     {
       "title": "I KNOW",
@@ -109,7 +127,10 @@
         "Mixing",
         "Mastering"
       ],
-      "date": "2026-05-22"
+      "date": "2026-05-22",
+      "id": "sergio-do-carmo-i-know",
+      "art": "/images/credits/sergio-do-carmo-i-know.jpg",
+      "url": "https://music.apple.com/us/album/i-know/6768181322?i=6768181323&uo=4"
     },
     {
       "title": "TAMO",
@@ -120,7 +141,10 @@
         "Mixing",
         "Mastering"
       ],
-      "date": "2026-05-15"
+      "date": "2026-05-15",
+      "id": "sergio-do-carmo-tamo",
+      "art": "/images/credits/sergio-do-carmo-tamo.jpg",
+      "url": "https://music.apple.com/us/album/tamo/6769299141?i=6769299142&uo=4"
     },
     {
       "title": "OH MY",
@@ -131,7 +155,10 @@
         "Mixing",
         "Mastering"
       ],
-      "date": "2026-04-05"
+      "date": "2026-04-05",
+      "id": "sergio-do-carmo-oh-my",
+      "art": "/images/credits/sergio-do-carmo-oh-my.jpg",
+      "url": "https://music.apple.com/us/album/oh-my/1890867765?i=1890867766&uo=4"
     },
     {
       "title": "STAY",
@@ -140,7 +167,10 @@
         "Mastering",
         "Mixing"
       ],
-      "date": "2025-02-28"
+      "date": "2025-02-28",
+      "id": "dystil-stay",
+      "art": "/images/credits/dystil-stay.jpg",
+      "url": "https://music.apple.com/us/album/stay/1796135965?i=1796135972&uo=4"
     },
     {
       "title": "Lovers Of Fire",
@@ -148,7 +178,10 @@
       "roles": [
         "Mastering"
       ],
-      "date": "2024-05-03"
+      "date": "2024-05-03",
+      "id": "leon-lovers-of-fire",
+      "art": "/images/credits/leon-lovers-of-fire.jpg",
+      "url": "https://music.apple.com/us/album/lovers-of-fire/1733680417?i=1733680418&uo=4"
     },
     {
       "title": "MAKE IT THROUGH",
@@ -159,16 +192,10 @@
         "Mixing",
         "Mastering"
       ],
-      "date": "2026-06-11"
-    },
-    {
-      "title": "GI MEG ALT",
-      "artist": "Crainaz",
-      "roles": [
-        "Mastering",
-        "Mixing"
-      ],
-      "date": "2025-11-21"
+      "date": "2026-06-11",
+      "id": "sergio-do-carmo-make-it-through",
+      "art": "/images/credits/sergio-do-carmo-make-it-through.jpg",
+      "url": "https://music.apple.com/us/album/make-it-through/6776215152?i=6776215161&uo=4"
     },
     {
       "title": "Dale",
@@ -181,7 +208,10 @@
       "versions": [
         "Dale - Radio Edit",
         "Dale - Original Mix"
-      ]
+      ],
+      "id": "rommuser-dale",
+      "art": "/images/credits/rommuser-dale.jpg",
+      "url": "https://music.apple.com/us/album/dale-radio-edit/1839453581?i=1839453703&uo=4"
     },
     {
       "title": "Far Away",
@@ -194,16 +224,10 @@
       "versions": [
         "Far Away - Extended Mix",
         "Far Away - Radio Edit"
-      ]
-    },
-    {
-      "title": "MIN SAVIOR",
-      "artist": "Crainaz",
-      "roles": [
-        "Mastering",
-        "Mixing"
       ],
-      "date": "2025-10-17"
+      "id": "dystil-far-away",
+      "art": "/images/credits/dystil-far-away.jpg",
+      "url": "https://music.apple.com/us/album/far-away-extended-mix/1812626057?i=1812626361&uo=4"
     }
   ]
 }
