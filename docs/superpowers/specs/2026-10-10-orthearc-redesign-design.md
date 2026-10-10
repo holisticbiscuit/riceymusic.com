@@ -45,7 +45,7 @@ Prototype of record: `.prototypes/aed9204d` (git-ignored): `home/J` (hero) and `
 | Route | Content |
 |---|---|
 | `/` | Hero only: portrait, RICEY, "Artist · Producer · Mixing · Mastering", Contact pill. Fits one screen, no scroll. |
-| `/credits` | Page title "Credits", release count, then all releases in the gapless grid (4 / 3 / 2 across). Merged versions show "2 versions". |
+| `/credits` | Page title "Credits", release count, then all releases in the gapless grid (4 / 3 / 2 across), newest release first. Hover shows roles as separate words (no dot separators), year, and "2 versions" for merged releases. |
 | `/artist` | Years release, YearsPlayer, Support (Chris Avantgarde clip), On rotation playlist. |
 | `/before-after` | Track 1 and Track 2 from `public/audio/`, A/B toggle between Before and After. |
 | `/services` | Mastering £50 / track, Stem Mastering £50 + £10 / stem, the labels credits line. |
