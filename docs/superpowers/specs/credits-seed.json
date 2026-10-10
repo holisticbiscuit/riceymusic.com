@@ -228,6 +228,18 @@
       "id": "dystil-far-away",
       "art": "/images/credits/dystil-far-away.jpg",
       "url": "https://music.apple.com/us/album/far-away-extended-mix/1812626057?i=1812626361&uo=4"
+    },
+    {
+      "title": "Alive",
+      "artist": "SERGIO DO CARMO",
+      "roles": [
+        "Composer",
+        "Producer"
+      ],
+      "date": "2026-08-07",
+      "id": "sergio-do-carmo-alive",
+      "art": "/images/credits/sergio-do-carmo-alive.jpg",
+      "url": "https://open.spotify.com/track/3ri0AagToCTAAQbDcNvGUJ"
     }
   ]
 }

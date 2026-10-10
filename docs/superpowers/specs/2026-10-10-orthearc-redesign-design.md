@@ -58,7 +58,8 @@ Tile links to the release when a link is known.
 
 ## Credits data
 
-Seed: `docs/superpowers/specs/credits-seed.json`, 17 releases transcribed from Muso, in
+Seed: `docs/superpowers/specs/credits-seed.json`, 18 releases (17 transcribed from Muso, plus
+Alive by SERGIO DO CARMO added by the user), in
 Muso popularity order, each with a cover in `public/images/credits/`. Excluded by request:
 Apocalypse, CAN'T STOP, Last Dance, PLAY ROUGH, Feel, and all Crainaz releases. Versions are merged into one entry with a `versions` list.
 
