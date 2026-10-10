@@ -4,13 +4,20 @@
    RICEY — brand tokens (Tailwind v4 @theme → utility classes)
    Voices: Bodoni Moda (wordmark/display), Instrument Serif
    (editorial italics), Inter (structure/body), JetBrains Mono
-   (labels/meta). Warm off-white ink on near-black.
+   (labels/meta). Warm off-white ink. The homepage sits on pure
+   black (the portrait's studio backdrop); inner pages take the
+   scarf's blue from the same photo.
    ============================================================ */
 @theme {
-  --color-base: #0a0a0a;
+  --color-base: #000000;
   --color-ink: #f4f1ec;
   --color-ink-soft: #e6e3de;
-  --color-ember: #c41e2a; /* the "Years" red — the single accent */
+
+  /* Scarf blue, measured from public/images/portrait.webp */
+  --color-scarf: #01289a;      /* lit folds */
+  --color-scarf-deep: #020933; /* shadow: inner page background */
+  --color-scarf-lift: #0b4de8; /* rim light */
+  --color-scarf-text: #5b86ff; /* small accent text on dark */
 
   --font-display: "Bodoni Moda Variable", "Bodoni Moda", "Didot", serif;
   --font-serif: "Instrument Serif", Georgia, serif;
@@ -23,16 +30,11 @@
 }
 
 html {
-  /* Lenis owns scrolling; native smooth would fight it on anchor jumps. */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   /* Bodoni carries an optical-size axis: let the browser pick the right cut
      per size so display type gets true hairlines, not scaled-up text shapes. */
   font-optical-sizing: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
 }
 
 body {
@@ -50,14 +52,14 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) #0a0a0a;
+  scrollbar-color: rgba(255, 255, 255, 0.18) var(--color-scarf-deep);
 }
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-track { background: var(--color-scarf-deep); }
 ::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  border: 3px solid #0a0a0a;
+  border: 3px solid var(--color-scarf-deep);
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.3); }
@@ -69,52 +71,7 @@ body {
 a:focus:not(:focus-visible),
 button:focus:not(:focus-visible) { outline: none; }
 
-/* ---- Aceternity-derived animations (recolored to brand) ---- */
-
-@keyframes spotlight {
-  0%   { opacity: 0; transform: translate(-72%, -62%) scale(0.5); }
-  100% { opacity: 1; transform: translate(-50%, -40%) scale(1); }
-}
-
-@keyframes aurora {
-  0%   { background-position: 50% 50%, 50% 50%; }
-  100% { background-position: 350% 50%, 350% 50%; }
-}
-
-@keyframes ricey-glow {
-  0%, 100% { opacity: 0.5; }
-  50%      { opacity: 0.85; }
-}
-
-.animate-spotlight { animation: spotlight 2.6s var(--ease-lux, ease) 0.5s 1 forwards; }
-
-/* ---- Always-on ambient motion (the "flowy" layer) ---- */
-
-/* Slow cinematic drift + scale — keeps every backdrop alive even at rest. */
-@keyframes kenburns {
-  0%   { transform: scale(1.06) translate3d(0, 0, 0); }
-  50%  { transform: scale(1.14) translate3d(-1.6%, -1.4%, 0); }
-  100% { transform: scale(1.06) translate3d(0, 0, 0); }
-}
-.kenburns { animation: kenburns 42s ease-in-out infinite; will-change: transform; }
-.kenburns-slow { animation-duration: 64s; }
-
-/* Hero portrait breathing — barely perceptible, never static. */
-@keyframes breathe {
-  0%, 100% { transform: scale(1.08); }
-  50%      { transform: scale(1.15); }
-}
-.breathe { animation: breathe 28s ease-in-out infinite; will-change: transform; }
-
-/* Ember bloom drifts behind the Years art. */
-@keyframes ember-drift {
-  0%   { transform: translate3d(-50%, -50%, 0) scale(1);   opacity: 0.12; }
-  50%  { transform: translate3d(-46%, -54%, 0) scale(1.18); opacity: 0.22; }
-  100% { transform: translate3d(-50%, -50%, 0) scale(1);   opacity: 0.12; }
-}
-.ember-drift { animation: ember-drift 18s ease-in-out infinite; will-change: transform, opacity; }
-
-/* Animated film grain — a single texture threaded through the whole page. */
+/* Animated film grain — a single texture threaded through the whole site. */
 @keyframes grain-shift {
   0%   { transform: translate3d(0, 0, 0); }
   10%  { transform: translate3d(-5%, -5%, 0); }
@@ -129,49 +86,14 @@ button:focus:not(:focus-visible) { outline: none; }
   inset: -50%;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.05;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain-shift 8s steps(6) infinite;
   will-change: transform;
-  /* Grain density rises with the high end while the record plays, and a touch
-     with scroll speed. Both variables sit at 0 until something sets them, so
-     this is the current value when the page is silent and still. */
-  opacity: calc(0.05 + var(--a-air, 0) * 0.06 + var(--scroll-v, 0) * 0.02);
+  /* Grain density rises with the high end while the record plays. The
+     variable sits at 0 until the player sets it. */
+  opacity: calc(0.05 + var(--a-air, 0) * 0.06);
 }
-
-/* Exposure lift driven by the low end. A separate fixed plate rather than a
-   filter on the backdrop, so it never forces the photo layers to repaint. */
-.audio-bloom {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: radial-gradient(120% 75% at 50% 45%, rgba(244, 241, 236, 0.16), transparent 62%);
-  opacity: calc(var(--a-low, 0) * 0.85);
-  mix-blend-mode: screen;
-}
-
-/* ---- Custom cursor ---- */
-.cursor-dot, .cursor-ring {
-  position: fixed; top: 0; left: 0; z-index: 9999;
-  pointer-events: none; border-radius: 9999px;
-  will-change: transform;
-}
-.cursor-dot {
-  width: 6px; height: 6px; margin: -3px 0 0 -3px;
-  background: var(--color-ink); mix-blend-mode: difference;
-}
-.cursor-ring {
-  width: 38px; height: 38px;
-  border: 1px solid rgba(244, 241, 236, 0.45);
-  transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
-}
-.cursor-ring.is-hover {
-  border-color: rgba(244, 241, 236, 0.9);
-  background: rgba(244, 241, 236, 0.06);
-}
-.has-cursor, .has-cursor a, .has-cursor button, .has-cursor [data-cursor] { cursor: none; }
 
 /* ---- Volume slider ----
    A hairline track with a small ink thumb, so it belongs to the same
@@ -225,15 +147,8 @@ button:focus:not(:focus-visible) { outline: none; }
   transform: scale(1.35);
 }
 
-/* ---- Mask reveal (headings/lines) ---- */
-.mask-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.12em; }
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-spotlight { animation: none; opacity: 1; transform: translate(-50%, -40%); }
-  .kenburns, .breathe, .ember-drift, .grain { animation: none; }
-  .grain { opacity: 0.04; }
-  .cursor-dot, .cursor-ring { display: none; }
-  .has-cursor, .has-cursor a, .has-cursor button { cursor: auto; }
+  .grain { animation: none; opacity: 0.04; }
 }
 
 /* mono micro-label */
