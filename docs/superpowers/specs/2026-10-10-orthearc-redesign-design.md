@@ -27,12 +27,14 @@ The site must not read as a copy of orthearc.
 - **Hero photo:** `public/images/portrait.webp` (from `RICEY PHOTO 4.png`: studio portrait on
   black, cobalt scarf). Shown in its natural colour on black, no tint. Only a dark fade at the
   bottom so the type reads. Wordmark, tagline and Contact pill sit low, over the scarf.
-- **Inner pages take the scarf's colour**, measured from the photo:
-  - `--color-scarf: #01289a` (lit folds)
-  - `--color-scarf-deep: #020933` (shadow): the page background
-  - `--color-scarf-lift: #0b4de8` (rim light)
+- **Inner pages take the scarf's colour**, measured from the photo (lit `#01289a`, shadow `#020933`)
+  and toned down at the user's request to a richer, calmer navy that is easier on the eye:
+  - `--color-scarf: #14296a` (glow behind page titles)
+  - `--color-scarf-deep: #060b21` (page background)
+  - `--color-scarf-lift: #2f4fa8` (highlights)
+  - `--color-scarf-text: #93a8dc` (small accent text, e.g. roles on hover)
   - Treatment ("deep scarf"): page is scarf-deep, with a radial glow of scarf rising from the top
-    behind the page title. Small accent text (roles on hover): `#5b86ff`.
+    behind the page title.
 - The Years red is retired as the site accent.
 - Bodoni Moda for wordmark and headings; Inter for UI; JetBrains Mono for spaced-caps labels.
 - Keep a light film grain. Lenis and reveals where they fit; drop the scroll-driven backdrop.

@@ -13,11 +13,12 @@
   --color-ink: #f4f1ec;
   --color-ink-soft: #e6e3de;
 
-  /* Scarf blue, measured from public/images/portrait.webp */
-  --color-scarf: #01289a;      /* lit folds */
-  --color-scarf-deep: #020933; /* shadow: inner page background */
-  --color-scarf-lift: #0b4de8; /* rim light */
-  --color-scarf-text: #5b86ff; /* small accent text on dark */
+  /* Scarf blue, taken from public/images/portrait.webp and toned down for reading:
+     deeper and less saturated than the fabric itself (lit #01289a, shadow #020933). */
+  --color-scarf: #14296a;      /* the glow behind page titles */
+  --color-scarf-deep: #060b21; /* inner page background */
+  --color-scarf-lift: #2f4fa8; /* highlights */
+  --color-scarf-text: #93a8dc; /* small accent text on dark */
 
   --font-display: "Bodoni Moda Variable", "Bodoni Moda", "Didot", serif;
   --font-serif: "Instrument Serif", Georgia, serif;

@@ -14,7 +14,7 @@ export default function Artist() {
   return (
     <PageShell eyebrow={`${RELEASE.label} · ${RELEASE.year} · ${RELEASE.format}`} title={RELEASE.title}>
       <section className="grid grid-cols-1 items-start gap-12 md:grid-cols-[320px_minmax(0,1fr)]">
-        <img src={RELEASE.art} alt={`${RELEASE.title} cover art`} className="mx-auto aspect-square w-full max-w-[320px] object-cover shadow-[0_30px_90px_-30px_rgba(11,77,232,0.6)]" />
+        <img src={RELEASE.art} alt={`${RELEASE.title} cover art`} className="mx-auto aspect-square w-full max-w-[320px] object-cover shadow-[0_30px_90px_-30px_var(--color-scarf-lift)]" />
         <div>
           <p className="max-w-md text-[1.05rem] leading-[1.85] text-white/80">{RELEASE.blurb}</p>
           <YearsPlayer src={EXCERPT} className="mt-8" />
