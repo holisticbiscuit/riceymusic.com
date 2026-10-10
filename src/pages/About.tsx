@@ -1,5 +1,4 @@
 import { PageShell } from '../components/PageShell'
-import { FACTS } from '../content'
 
 export default function About() {
   return (
@@ -16,15 +15,6 @@ export default function About() {
           with the same precision and care.
         </p>
       </div>
-
-      <dl className="mx-auto mt-14 grid max-w-2xl grid-cols-2 gap-x-10 gap-y-8 border-t border-white/[0.14] pt-10 sm:grid-cols-4">
-        {FACTS.map(([label, value]) => (
-          <div key={label}>
-            <dt className="eyebrow mb-2.5 text-white/50">{label}</dt>
-            <dd className="font-serif text-[1.05rem] leading-snug text-ink">{value}</dd>
-          </div>
-        ))}
-      </dl>
     </PageShell>
   )
 }

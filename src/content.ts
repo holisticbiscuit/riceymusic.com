@@ -11,13 +11,6 @@ export const INSTAGRAM = 'https://www.instagram.com/riceymusic/'
 export const SOUNDCLOUD = 'https://soundcloud.com/riceymusic'
 export const SPOTIFY_TRACK = 'https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c'
 
-export const FACTS: [string, string][] = [
-  ['Based', 'London, UK'],
-  ['Genre', 'House, Techno, Progressive'],
-  ['Label', 'mau5trap'],
-  ['Also', 'Mixing & Mastering'],
-]
-
 export const RELEASE = {
   title: 'Years',
   label: 'mau5trap',
