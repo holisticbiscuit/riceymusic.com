@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router'
 
 // Self-hosted fonts: no request to Google, so no visitor IP leaves the site,
 // and no render-blocking stylesheet. Bodoni carries its optical-size axis so
@@ -15,6 +16,8 @@ import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 )
