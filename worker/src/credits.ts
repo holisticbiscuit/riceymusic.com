@@ -56,3 +56,12 @@ export async function readCredits(kv: KVNamespace): Promise<Credit[]> {
 export async function writeCredits(kv: KVNamespace, list: Credit[]) {
   await kv.put('credits', JSON.stringify(list))
 }
+
+export function duplicateId(list: { id: string }[]): string | null {
+  const seen = new Set<string>()
+  for (const { id } of list) {
+    if (seen.has(id)) return id
+    seen.add(id)
+  }
+  return null
+}

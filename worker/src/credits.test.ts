@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validateCredit } from './credits'
+import { duplicateId, validateCredit } from './credits'
 
 const base = { title: 'Alive', artist: 'SERGIO DO CARMO', roles: ['Producer'], date: '2026-08-07' }
 
@@ -26,5 +26,12 @@ describe('validateCredit', () => {
   })
   it('keeps site-relative art for the bundled covers', () => {
     expect(validateCredit({ ...base, art: '/images/credits/x.jpg' }).ok).toBe(true)
+  })
+})
+
+describe('duplicateId', () => {
+  it('finds a repeated id', () => {
+    expect(duplicateId([{ id: 'a' }, { id: 'b' }, { id: 'a' }])).toBe('a')
+    expect(duplicateId([{ id: 'a' }, { id: 'b' }])).toBeNull()
   })
 })

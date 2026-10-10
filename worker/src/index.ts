@@ -1,6 +1,6 @@
 import { safeEqual, signToken, verifyToken } from './auth'
 import { lookup, parseLink } from './lookup'
-import { readCredits, validateCredit, writeCredits, type Credit } from './credits'
+import { duplicateId, readCredits, validateCredit, writeCredits, type Credit } from './credits'
 
 export interface Env {
   CREDITS: KVNamespace
@@ -81,6 +81,11 @@ export default {
         const r = validateCredit(item)
         if (!r.ok) return json({ error: `${(item as { title?: string })?.title || 'A credit'}: ${r.error}` }, 400)
         out.push(r.credit)
+      }
+      const dup = duplicateId(out)
+      if (dup) {
+        const c = out.find(x => x.id === dup)!
+        return json({ error: `${c.title} by ${c.artist} is already in the list` }, 409)
       }
       await writeCredits(env.CREDITS, out)
       return json(out)
