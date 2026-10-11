@@ -40,7 +40,7 @@ export function useCredits() {
   useEffect(() => {
     if (!API_URL) return
     const ctl = new AbortController()
-    fetch(`${API_URL}/credits`, { signal: ctl.signal })
+    fetch(`${API_URL}/credits`, { signal: ctl.signal, cache: 'no-cache' })
       .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((list: Credit[]) => {
         if (Array.isArray(list) && list.length) setCredits(normalizeCredits(list))

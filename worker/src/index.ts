@@ -33,7 +33,8 @@ export default {
     const now = Date.now() / 1000
 
     if (req.method === 'GET' && url.pathname === '/credits') {
-      return json(await readCredits(env.CREDITS), 200, { 'cache-control': 'public, max-age=60' })
+      // no-cache: browsers always check back, so an admin change shows on the next page load.
+      return json(await readCredits(env.CREDITS), 200, { 'cache-control': 'no-cache' })
     }
 
     if (req.method === 'POST' && url.pathname === '/login') {
