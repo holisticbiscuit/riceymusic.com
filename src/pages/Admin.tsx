@@ -112,6 +112,8 @@ export default function Admin() {
                 <Pill solid onClick={() => save(SEED).catch(() => {})}>Import the {SEED.length} built-in credits</Pill>
               </div>
             ) : (
+              <>
+              <MissingSeed credits={credits} onAdd={missing => save([...credits, ...missing]).catch(() => {})} />
               <ul className="mt-8 divide-y divide-white/[0.08] border-y border-white/[0.08]">
                 {credits.map(c => (
                   <li key={c.id} className="flex items-center gap-4 py-3">
@@ -128,10 +130,27 @@ export default function Admin() {
                   </li>
                 ))}
               </ul>
+              </>
             )}
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+// Credits added to the site's built-in list after the stored list was imported.
+function MissingSeed({ credits, onAdd }: { credits: Credit[]; onAdd: (missing: Credit[]) => void }) {
+  const ids = new Set(credits.map(c => c.id))
+  const missing = SEED.filter(s => !ids.has(s.id))
+  if (!missing.length) return null
+  return (
+    <div className="mt-8 rounded-2xl border border-white/10 bg-scarf/30 p-5">
+      <p className="mb-4 text-sm text-white/80">
+        {missing.length} built-in {missing.length === 1 ? 'credit isn’t' : 'credits aren’t'} in your list yet:{' '}
+        <span className="text-ink">{missing.map(m => m.title).join(', ')}</span>
+      </p>
+      <Pill solid onClick={() => onAdd(missing)}>Add {missing.length === 1 ? 'it' : `all ${missing.length}`}</Pill>
     </div>
   )
 }

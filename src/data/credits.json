@@ -240,6 +240,54 @@
       "id": "sergio-do-carmo-alive",
       "art": "/images/credits/sergio-do-carmo-alive.jpg",
       "url": "https://open.spotify.com/track/3ri0AagToCTAAQbDcNvGUJ"
+    },
+    {
+      "title": "Too Clever by Half",
+      "artist": "zaccwithtwocs",
+      "roles": [
+        "Mixing",
+        "Mastering"
+      ],
+      "date": "2026-03-06",
+      "id": "zaccwithtwocs-too-clever-by-half",
+      "art": "/images/credits/zaccwithtwocs-too-clever-by-half.jpg",
+      "url": "https://open.spotify.com/track/4F0HDivnI5g3DzvT8J7tmD"
+    },
+    {
+      "title": "The One",
+      "artist": "zaccwithtwocs",
+      "roles": [
+        "Mixing",
+        "Mastering"
+      ],
+      "date": "2026-08-28",
+      "id": "zaccwithtwocs-the-one",
+      "art": "/images/credits/zaccwithtwocs-the-one.jpg",
+      "url": "https://open.spotify.com/track/6xYfYogfKRcFaZqB95x1oS"
+    },
+    {
+      "title": "Resonating",
+      "artist": "zaccwithtwocs",
+      "roles": [
+        "Mixing",
+        "Mastering"
+      ],
+      "date": "2026-07-17",
+      "id": "zaccwithtwocs-resonating",
+      "art": "/images/credits/zaccwithtwocs-resonating.jpg",
+      "url": "https://open.spotify.com/track/1PzDd55Csfy9Az72nOJH5K"
+    },
+    {
+      "title": "The Truth",
+      "artist": "zaccwithtwocs",
+      "roles": [
+        "Mixing",
+        "Mastering"
+      ],
+      "date": "2026-05-15",
+      "id": "zaccwithtwocs-the-truth",
+      "art": "/images/credits/zaccwithtwocs-the-truth.jpg",
+      "url": "https://open.spotify.com/track/6Id4FqrwyWaWx887b4xARd"
     }
   ]
 }
