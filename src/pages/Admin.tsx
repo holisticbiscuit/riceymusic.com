@@ -7,6 +7,7 @@ import { Pill } from '../components/Pill'
 import { LoginForm } from './admin/LoginForm'
 import { CreditForm } from './admin/CreditForm'
 import { ABAdmin } from './admin/ABAdmin'
+import { Inbox } from './admin/Inbox'
 import { cn } from '../lib/utils'
 
 // Private page: not linked anywhere and kept out of search results.
@@ -27,7 +28,7 @@ export default function Admin() {
   const [credits, setCredits] = useState<Credit[] | null>(null)
   const [editing, setEditing] = useState<Credit | 'new' | null>(null)
   const [error, setError] = useState('')
-  const [tab, setTab] = useState<'credits' | 'ab'>('credits')
+  const [tab, setTab] = useState<'credits' | 'ab' | 'inbox'>('credits')
 
   const signOut = useCallback(() => {
     setToken(null)
@@ -96,15 +97,17 @@ export default function Admin() {
           <LoginForm onSignedIn={() => setSignedIn(true)} />
         ) : (
           <>
-            <div role="tablist" aria-label="Section" className="mb-10 inline-flex rounded-full bg-black/40 p-1">
-              {([['credits', 'Credits'], ['ab', 'Before / After']] as const).map(([id, label]) => (
-                <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={cn('min-h-11 rounded-full px-6 text-sm transition-colors', tab === id ? 'bg-ink text-black' : 'text-white/70 hover:text-ink')}>
+            <div role="tablist" aria-label="Section" className="mb-10 inline-flex max-w-full overflow-x-auto rounded-full bg-black/40 p-1">
+              {([['credits', 'Credits'], ['ab', 'Before / After'], ['inbox', 'Inbox']] as const).map(([id, label]) => (
+                <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={cn('min-h-11 shrink-0 rounded-full px-4 text-sm transition-colors sm:px-6', tab === id ? 'bg-ink text-black' : 'text-white/70 hover:text-ink')}>
                   {label}
                 </button>
               ))}
             </div>
 
-            {tab === 'ab' ? (
+            {tab === 'inbox' ? (
+              <Inbox onAuthError={signOut} />
+            ) : tab === 'ab' ? (
               <ABAdmin credits={credits?.length ? credits : SEED} onAuthError={signOut} />
             ) : (
             <>

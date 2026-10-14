@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { PageShell } from '../components/PageShell'
 import { Light } from '../components/Light'
 import { EMAIL, INSTAGRAM, RATES, SOUNDCLOUD, SPOTIFY_TRACK } from '../content'
-import { SEED } from '../lib/credits'
+import { API_URL } from '../lib/api'
 import { cn } from '../lib/utils'
 
 const SERVICES = [
@@ -11,20 +11,11 @@ const SERVICES = [
   { name: 'Mixing & mastering', price: '£300', unit: '/ track', line: 'From your stems to the release master.' },
 ]
 
-const STEPS = [
-  ['Send', 'Fill this in and send the email with a link to your files.'],
-  ['Listen', 'You get the master back to hear on everything you own.'],
-  ['Adjust', 'Notes go back and forth until it sounds right.'],
-  ['Release', 'The final files, ready for distribution.'],
-]
-
 const CHANNELS = [
   { label: 'Instagram', handle: '@riceymusic', href: INSTAGRAM },
   { label: 'SoundCloud', handle: 'riceymusic', href: SOUNDCLOUD },
   { label: 'Spotify', handle: 'Ricey', href: SPOTIFY_TRACK },
 ]
-
-const WORK = SEED.filter(c => c.art && (c.roles.includes('Mixing') || c.roles.includes('Mastering')))
 
 const mailto = (subject?: string, body?: string) => {
   const q = [subject && `subject=${encodeURIComponent(subject)}`, body && `body=${encodeURIComponent(body)}`].filter(Boolean).join('&')
@@ -50,9 +41,44 @@ export default function Contact() {
   const [link, setLink] = useState('')
   const [svc, setSvc] = useState(SERVICES[0].name)
   const [note, setNote] = useState('')
-  const ready = Boolean(name.trim() && track.trim() && link.trim())
+  const [email, setEmail] = useState('')
+  const [website, setWebsite] = useState('') // left empty by people; bots fill it in
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
+  const [problem, setProblem] = useState('')
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+  const ready = Boolean(name.trim() && emailOk && track.trim() && link.trim())
   const subject = `${svc}: ${track}`
   const body = `Hi Ricey,\n\n${note.trim() ? note.trim() + '\n\n' : ''}Track: ${track}\nService: ${svc}\nFiles: ${link}\n\n${name}`
+  // Sent through the site's API, so it works without an email app. Without the API (or if it
+  // fails) the visitor's own email app opens with the message written.
+  const send = async () => {
+    if (!ready || status === 'sending') return
+    if (!API_URL) {
+      window.location.href = mailto(subject, body)
+      return
+    }
+    setStatus('sending')
+    setProblem('')
+    try {
+      const r = await fetch(`${API_URL}/contact`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name, email, track, service: svc, link, note, website }),
+      })
+      if (!r.ok) throw new Error(((await r.json().catch(() => null)) as { error?: string } | null)?.error ?? 'It didn’t send.')
+      setStatus('sent')
+    } catch (e) {
+      setProblem((e as Error).message === 'Failed to fetch' ? 'It didn’t send. Check your connection.' : (e as Error).message)
+      setStatus('failed')
+    }
+  }
+  const reset = () => {
+    setTrack('')
+    setLink('')
+    setNote('')
+    setStatus('idle')
+  }
+
   const field = 'mt-2 w-full rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-ink placeholder:text-white/30 focus:border-white/50 focus:outline-none'
   const blank = (v: string, ph: string) => (v.trim() ? <span className="text-ink">{v}</span> : <span className="text-white/30">{ph}</span>)
 
@@ -65,13 +91,30 @@ export default function Contact() {
         </p>
 
         <div className="grid gap-5 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-          <form className="glass rounded-3xl p-7 sm:p-9" onSubmit={e => { e.preventDefault(); if (ready) window.location.href = mailto(subject, body) }}>
+          {status === 'sent' ? (
+            <section className="glass flex flex-col justify-center rounded-3xl p-7 sm:p-9" role="status">
+              <h2 className="font-heading text-[2.6rem] leading-none text-ink">Sent.</h2>
+              <p className="mt-4 max-w-md text-[1.05rem] leading-relaxed text-white/70">
+                Thanks, {name.trim()}. I’ll listen to {track.trim()} and reply to <span className="text-ink">{email.trim()}</span>.
+              </p>
+              <div className="mt-8">
+                <button type="button" onClick={reset} className="inline-flex min-h-11 items-center rounded-full border border-white/25 px-6 text-[0.72rem] font-medium uppercase tracking-[0.18em] text-ink hover:border-white/60">
+                  Send another track
+                </button>
+              </div>
+            </section>
+          ) : (
+          <form className="glass relative rounded-3xl p-7 sm:p-9" onSubmit={e => { e.preventDefault(); void send() }}>
             <h2 className="font-heading text-[2.2rem] leading-none text-ink">Send a track</h2>
-            <p className="mt-3 text-white/60">Fill this in and your email opens ready to send.</p>
+            <p className="mt-3 text-white/60">It comes straight to me, and I reply by email.</p>
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
               <label className="text-sm text-white/70">Your name<input className={field} value={name} onChange={e => setName(e.target.value)} placeholder="Artist name" autoComplete="name" /></label>
-              <label className="text-sm text-white/70">Track title<input className={field} value={track} onChange={e => setTrack(e.target.value)} placeholder="Track title" /></label>
+              <label className="text-sm text-white/70">Your email<input type="email" className={field} value={email} onChange={e => setEmail(e.target.value)} placeholder="So I can reply" autoComplete="email" /></label>
+              <label className="text-sm text-white/70 sm:col-span-2">Track title<input className={field} value={track} onChange={e => setTrack(e.target.value)} placeholder="Track title" /></label>
             </div>
+            <label aria-hidden className="absolute left-0 top-0 h-px w-px overflow-hidden opacity-0">
+              Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} />
+            </label>
             <fieldset className="mt-6">
               <legend className="text-sm text-white/70">Service</legend>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -82,17 +125,25 @@ export default function Contact() {
             </fieldset>
             <label className="mt-6 block text-sm text-white/70">Link to files<input className={field} value={link} onChange={e => setLink(e.target.value)} placeholder="Dropbox, Google Drive or WeTransfer" inputMode="url" /></label>
             <label className="mt-6 block text-sm text-white/70">Anything else <span className="text-white/40">(optional)</span><textarea rows={3} className={field} value={note} onChange={e => setNote(e.target.value)} placeholder="Reference tracks, release date" /></label>
+            {status === 'failed' && (
+              <p role="alert" className="mt-6 rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-200">
+                {problem} <a href={mailto(subject, body)} className="underline underline-offset-2">Send it from your email app instead</a>.
+              </p>
+            )}
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <button type="submit" disabled={!ready} className={cn('inline-flex min-h-11 items-center rounded-full px-6 text-[0.72rem] font-medium uppercase tracking-[0.18em]', ready ? 'bg-ink text-black hover:bg-white' : 'cursor-not-allowed bg-white/15 text-white/40')}>Open email</button>
-              {!ready && <span className="text-sm text-white/40">Name, title and link needed</span>}
+              <button type="submit" disabled={!ready || status === 'sending'} className={cn('inline-flex min-h-11 items-center rounded-full px-6 text-[0.72rem] font-medium uppercase tracking-[0.18em]', ready ? 'bg-ink text-black hover:bg-white' : 'cursor-not-allowed bg-white/15 text-white/40')}>
+                {status === 'sending' ? 'Sending…' : 'Send'}
+              </button>
+              {!ready && <span className="text-sm text-white/40">{email.trim() && !emailOk ? 'Check your email address' : 'Name, email, title and link needed'}</span>}
             </div>
           </form>
+          )}
 
           <aside className="flex flex-col gap-5">
             <section className="glass flex flex-1 flex-col rounded-3xl p-7" aria-label="Email preview">
-              <p className="eyebrow text-white/45">Your email</p>
+              <p className="eyebrow text-white/45">Your message</p>
               <dl className="mt-5 space-y-2 border-b border-white/10 pb-5 text-sm">
-                <div className="flex gap-3"><dt className="w-16 shrink-0 text-white/45">To</dt><dd className="truncate text-white/80">{EMAIL}</dd></div>
+                <div className="flex gap-3"><dt className="w-16 shrink-0 text-white/45">To</dt><dd className="truncate text-white/80">Ricey</dd></div>
                 <div className="flex gap-3"><dt className="w-16 shrink-0 text-white/45">Subject</dt><dd className="min-w-0 truncate">{svc}: {blank(track, 'Track title')}</dd></div>
               </dl>
               <div className="mt-5 flex-1 space-y-4 text-[0.95rem] leading-relaxed text-white/70">
@@ -138,28 +189,7 @@ export default function Contact() {
           </div>
         </section>
 
-        <section className="mt-24">
-          <h2 className="mb-10 text-center font-heading text-[2.2rem] leading-none text-ink">What happens next</h2>
-          <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map(([t, d], i) => (
-              <li key={t} className="border-t border-white/15 pt-5">
-                <span className="font-mono text-xs text-scarf-text">0{i + 1}</span>
-                <p className="mt-3 font-heading text-xl text-ink">{t}</p>
-                <p className="mt-2 text-sm leading-relaxed text-white/60">{d}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
 
-        <section className="mt-24">
-          <div className="mb-6 flex items-baseline justify-between gap-4">
-            <h2 className="font-heading text-[2.2rem] leading-none text-ink">Recent work</h2>
-            <span className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-white/45">Mixed &amp; mastered here</span>
-          </div>
-          <div className="grid grid-cols-4 overflow-hidden rounded-2xl sm:grid-cols-8">
-            {WORK.slice(0, 8).map(c => <img key={c.id} src={c.art} alt={`${c.title} by ${c.artist}`} className="aspect-square w-full object-cover" />)}
-          </div>
-        </section>
 
         <div className="mt-24 grid gap-3 sm:grid-cols-3">
           {CHANNELS.map(c => (

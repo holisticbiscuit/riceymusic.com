@@ -3,6 +3,8 @@ import { lookup, parseLink } from './lookup'
 import { duplicateId, readCredits, validateCredit, writeCredits, type Credit } from './credits'
 import { DATA_PATH, audioPath, isSha, validateEntry, type ABEntry } from './ab'
 import { GitHubError, commit, createBlob, readText, type Repo } from './github'
+import { EmailMessage } from 'cloudflare:email'
+import { enquiryText, mimeMessage, validateEnquiry, type Enquiry } from './contact'
 
 export interface Env {
   CREDITS: KVNamespace
@@ -15,9 +17,17 @@ export interface Env {
   GITHUB_TOKEN?: string
   GITHUB_REPO: string
   GITHUB_BRANCH: string
+  // Contact form: each enquiry is stored, and emailed to CONTACT_TO when Email Routing is on
+  // for the domain (the send_email binding, sending as CONTACT_FROM).
+  EMAIL?: SendEmail
+  CONTACT_TO?: string
+  CONTACT_FROM?: string
 }
 
 const MAX_CLIP_BYTES = 20 * 1024 * 1024
+const CONTACT_PER_HOUR = 5
+// Newest first: KV lists keys in ascending order.
+const messageKey = (ms: number) => `msg:${String(9e15 - ms).padStart(16, '0')}-${crypto.randomUUID().slice(0, 8)}`
 
 const MAX_FAILS = 5
 const LOCK_SECONDS = 15 * 60
@@ -64,6 +74,29 @@ export default {
       return json({ token: await signToken(env.TOKEN_SECRET, now) })
     }
 
+    if (req.method === 'POST' && url.pathname === '/contact') {
+      const body = (await req.json().catch(() => ({}))) as Record<string, unknown>
+      // Bots fill in every field, including this one people never see.
+      if (typeof body.website === 'string' && body.website) return json({ ok: true })
+      const r = validateEnquiry(body)
+      if (!r.ok) return json({ error: r.error }, 400)
+      const ip = req.headers.get('cf-connecting-ip') ?? 'unknown'
+      const rateKey = `contact:${ip}`
+      const sent = Number((await env.CREDITS.get(rateKey)) ?? 0)
+      if (sent >= CONTACT_PER_HOUR) return json({ error: 'That’s a few messages already. Try again in an hour, or email directly.' }, 429)
+      await env.CREDITS.put(rateKey, String(sent + 1), { expirationTtl: 3600 })
+
+      const key = messageKey(Date.now())
+      const enquiry: Enquiry = { id: key.slice(4), at: new Date().toISOString(), ...r.enquiry }
+      await env.CREDITS.put(key, JSON.stringify(enquiry))
+      if (env.EMAIL && env.CONTACT_TO && env.CONTACT_FROM) {
+        const raw = mimeMessage({ from: env.CONTACT_FROM, to: env.CONTACT_TO, replyTo: enquiry.email, subject: `${enquiry.service}: ${enquiry.track} (${enquiry.name})`, text: enquiryText(enquiry) })
+        // Stored either way; a failed email still shows in the admin's Inbox.
+        await env.EMAIL.send(new EmailMessage(env.CONTACT_FROM, env.CONTACT_TO, raw)).catch(e => console.error('contact email failed', e))
+      }
+      return json({ ok: true })
+    }
+
     // Everything below needs a valid token.
     const token = req.headers.get('authorization')?.replace(/^Bearer /, '') ?? ''
     if (!(await verifyToken(env.TOKEN_SECRET, token, now))) return json({ error: 'Not signed in' }, 401)
@@ -99,6 +132,17 @@ export default {
       }
       await writeCredits(env.CREDITS, out)
       return json(out)
+    }
+
+    if (req.method === 'GET' && url.pathname === '/messages') {
+      const list = await env.CREDITS.list({ prefix: 'msg:', limit: 100 })
+      const items = await Promise.all(list.keys.map(k => env.CREDITS.get(k.name, 'json')))
+      return json(items.filter(Boolean), 200, { 'cache-control': 'no-store' })
+    }
+    const msg = /^\/messages\/([\w-]+)$/.exec(url.pathname)
+    if (req.method === 'DELETE' && msg) {
+      await env.CREDITS.delete(`msg:${msg[1]}`)
+      return json({ ok: true })
     }
 
     // Before / After pairs, stored in the site's repo.
