@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import peaks from '../data/ab-peaks.json'
+import abTracks from '../data/ab-tracks.json'
 import { SEED } from './credits'
 
 export type Version = 'before' | 'after'
@@ -11,31 +11,15 @@ export type ABTrack = {
   roles: string[]
   src: Record<Version, string>
   lufs: Record<Version, number> // integrated loudness, measured with ffmpeg ebur128
-  peaks: Record<Version, number[]> // 160 RMS bins, normalised across the demo files
+  peaks: Record<Version, number[]> // 160 RMS bins, normalised to the louder of the pair
 }
 
-const P = peaks as Record<string, number[]>
+// Made by scripts/ab-encode.mjs from the before/after WAVs, keyed by release title.
+const AUDIO = abTracks as Record<string, Pick<ABTrack, 'src' | 'lufs' | 'peaks'>>
 
-// The two demo pairs on the site today. Every release plays one of them as a stand-in until
-// its own before/after files are added.
-const DEMOS: Pick<ABTrack, 'src' | 'lufs' | 'peaks'>[] = [
-  {
-    src: { before: '/audio/Track 1 - Before.mp3', after: '/audio/Track 1 - After.mp3' },
-    lufs: { before: -14.9, after: -7.5 },
-    peaks: { before: P['Track 1 - Before'], after: P['Track 1 - After'] },
-  },
-  {
-    src: { before: '/audio/Track 2 - Before.mp3', after: '/audio/Track 2 - After.mp3' },
-    lufs: { before: -13.3, after: -7.1 },
-    peaks: { before: P['Track 2 - Before'], after: P['Track 2 - After'] },
-  },
-]
-
-// The releases chosen for the Before / After page.
-const AB_RELEASES = ['The One', 'Resonating', 'MAKE IT THROUGH', 'Ms Westminster', 'I KNOW', 'TAMO', 'The Truth', 'Too Clever by Half', 'Anemoia']
-
-export const AB_TRACKS: ABTrack[] = SEED.filter(c => AB_RELEASES.includes(c.title)).map((c, i) => ({
-  ...DEMOS[i % DEMOS.length],
+// Every release with before/after audio, newest first like the Credits page.
+export const AB_TRACKS: ABTrack[] = SEED.filter(c => AUDIO[c.title]).map(c => ({
+  ...AUDIO[c.title],
   title: c.title,
   artist: c.artist,
   art: c.art,
