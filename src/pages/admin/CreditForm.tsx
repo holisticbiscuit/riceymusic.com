@@ -9,7 +9,8 @@ type Found = { title: string; artist: string; date: string; art: string; url: st
 const empty: Credit = { id: '', title: '', artist: '', roles: [], date: '' }
 
 // Add or edit one credit. Pasting a Spotify / Apple Music link fills the details and cover.
-export function CreditForm({ initial, onSave, onCancel }: { initial?: Credit; onSave: (c: Credit) => Promise<void>; onCancel: () => void }) {
+// bare: no box of its own (inside the drawer); onDelete adds a Delete button.
+export function CreditForm({ initial, onSave, onCancel, onDelete, bare }: { initial?: Credit; onSave: (c: Credit) => Promise<void>; onCancel: () => void; onDelete?: () => void; bare?: boolean }) {
   const [c, setC] = useState<Credit>(initial ?? empty)
   const [link, setLink] = useState(initial?.url ?? '')
   const [versions, setVersions] = useState((initial?.versions ?? []).join('\n'))
@@ -49,7 +50,7 @@ export function CreditForm({ initial, onSave, onCancel }: { initial?: Credit; on
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-black/30 p-5 sm:p-7">
+    <form onSubmit={submit} className={bare ? 'flex flex-col gap-5' : 'flex flex-col gap-5 rounded-2xl border border-white/10 bg-black/30 p-5 sm:p-7'}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1">
           <Field label="Spotify or Apple Music link">
@@ -94,6 +95,7 @@ export function CreditForm({ initial, onSave, onCancel }: { initial?: Credit; on
       <div className="flex flex-wrap gap-3">
         <Pill type="submit" solid disabled={busy !== null}>{busy === 'save' ? 'Saving…' : 'Save credit'}</Pill>
         <Pill onClick={onCancel}>Cancel</Pill>
+        {onDelete && <button type="button" onClick={onDelete} className="ml-auto min-h-11 px-2 text-sm text-red-300/80 hover:text-red-200">Delete credit</button>}
       </div>
     </form>
   )

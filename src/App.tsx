@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { MotionConfig } from 'motion/react'
 import { Outlet, Route, Routes, useLocation } from 'react-router'
 import { Nav } from './components/Nav'
@@ -10,8 +10,10 @@ import BeforeAfter from './pages/BeforeAfter'
 import Services from './pages/Services'
 import About from './pages/About'
 import Contact from './pages/Contact'
-import Admin from './pages/Admin'
 import NotFound from './pages/NotFound'
+
+// The admin (and its MP3 encoder) loads only when someone opens /admin.
+const Admin = lazy(() => import('./pages/Admin'))
 
 function Layout() {
   const { pathname } = useLocation()
@@ -51,7 +53,7 @@ export default function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Route>
-        <Route path="admin" element={<Admin />} />
+        <Route path="admin" element={<Suspense fallback={<div className="min-h-svh bg-scarf-deep" />}><Admin /></Suspense>} />
       </Routes>
     </MotionConfig>
   )
