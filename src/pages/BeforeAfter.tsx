@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PageShell } from '../components/PageShell'
 import { Pill } from '../components/Pill'
 import { PlayButton, Volume, Wave } from '../components/Playback'
 import { ACTIVE_MODES, AB_TRACKS, fmt, inMode, shownPeaks, useAB, type ABTrack, type Mode } from '../lib/ab'
+import { preload, warm } from '../lib/abEngine'
 import { cn } from '../lib/utils'
 
 function Art({ track, className }: { track: ABTrack; className?: string }) {
@@ -15,6 +16,11 @@ function Art({ track, className }: { track: ABTrack; className?: string }) {
 
 // Step 1: choose what to hear.
 function Choose({ onPick }: { onPick: (m: Mode) => void }) {
+  // Fetch the first release of each comparison while the page sits idle.
+  useEffect(() => {
+    const id = setTimeout(() => preload(ACTIVE_MODES.map(m => AB_TRACKS.find(t => inMode(t, m.mode))!)), 600)
+    return () => clearTimeout(id)
+  }, [])
   return (
     <>
       <p className="mx-auto mb-12 max-w-xl text-center text-[1.1rem] leading-relaxed text-white/70">
@@ -28,6 +34,9 @@ function Choose({ onPick }: { onPick: (m: Mode) => void }) {
               key={mode}
               type="button"
               onClick={() => onPick(mode)}
+              onPointerEnter={() => warm(tracks[0])}
+              onPointerDown={() => warm(tracks[0])}
+              onFocus={() => warm(tracks[0])}
               className="group flex flex-col overflow-hidden rounded-3xl border border-white/[0.08] bg-black/25 text-left transition-colors hover:border-white/25"
             >
               {tracks.length >= 3 ? (
@@ -122,7 +131,7 @@ function Player({ mode, onBack }: { mode: Mode; onBack: () => void }) {
 
       <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {list.map((t, i) => (
-          <button key={t.title} type="button" onClick={() => ab.select(i)} className={cn('text-left transition-opacity', i === ab.idx ? 'opacity-100' : 'opacity-60 hover:opacity-100')}>
+          <button key={t.title} type="button" onClick={() => ab.select(i)} onPointerEnter={() => warm(t)} onPointerDown={() => warm(t)} className={cn('text-left transition-opacity', i === ab.idx ? 'opacity-100' : 'opacity-60 hover:opacity-100')}>
             <Art track={t} className={cn('w-full rounded-lg', i === ab.idx && 'ring-2 ring-scarf-text')} />
             <span className="mt-2 block truncate text-sm text-ink">{t.title}</span>
             <span className="block truncate text-xs text-white/50">{t.artist}</span>

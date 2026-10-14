@@ -7,23 +7,46 @@ export type ABSource = { src: Record<Version, string>; lufs: Record<Version, num
 let ctx: AudioContext | null = null
 const audio = () => (ctx ??= new AudioContext())
 
-// Decoded clips, so going back to a release doesn't download it again. A two-minute stereo
-// clip is about 40 MB decoded, so only the last few are kept.
-const cache = new Map<string, Promise<AudioBuffer>>()
-const decode = (url: string) => {
-  let hit = cache.get(url)
+// Downloaded MP3s (a few MB each) are kept for the visit, so clips fetched ahead of time are
+// ready when picked. Decoded audio is about 40 MB per two-minute clip, so only the current
+// pair and the one after it stay decoded.
+const bytes = new Map<string, Promise<ArrayBuffer>>()
+const fetchClip = (url: string) => {
+  let hit = bytes.get(url)
   if (!hit) {
-    hit = fetch(url)
-      .then(r => {
-        if (!r.ok) throw new Error(`${r.status} ${url}`)
-        return r.arrayBuffer()
-      })
-      .then(b => audio().decodeAudioData(b))
-    hit.catch(() => cache.delete(url))
-    cache.set(url, hit)
-    while (cache.size > 6) cache.delete(cache.keys().next().value!)
+    hit = fetch(url).then(r => {
+      if (!r.ok) throw new Error(`${r.status} ${url}`)
+      return r.arrayBuffer()
+    })
+    hit.catch(() => bytes.delete(url))
+    bytes.set(url, hit)
   }
   return hit
+}
+const decoded = new Map<string, Promise<AudioBuffer>>()
+const decode = (url: string) => {
+  let hit = decoded.get(url)
+  if (!hit) {
+    // decodeAudioData takes ownership of its buffer, so it gets a copy.
+    hit = fetchClip(url).then(b => audio().decodeAudioData(b.slice(0)))
+    hit.catch(() => decoded.delete(url))
+    decoded.set(url, hit)
+    while (decoded.size > 4) decoded.delete(decoded.keys().next().value!)
+  }
+  return hit
+}
+
+// Decode a pair ahead of time, e.g. when the card that opens it is hovered.
+export const warm = (t: ABSource) => {
+  Promise.all([decode(t.src.before), decode(t.src.after)]).catch(() => {})
+}
+
+// Download clips ahead of time (not decoded), e.g. the first of each comparison.
+export const preload = (tracks: ABSource[]) => {
+  for (const t of tracks) {
+    fetchClip(t.src.before).catch(() => {})
+    fetchClip(t.src.after).catch(() => {})
+  }
 }
 
 const VOLUME_KEY = 'ricey-ab-volume'
@@ -134,6 +157,9 @@ export function useABEngine<T extends ABSource>(list: T[]) {
         // A fresh start each time a release is opened.
         setPlayingTrack(null)
         setClock({ track, t: 0 })
+        // Get the next release ready too, so picking it starts at once.
+        const next = list[list.indexOf(track) + 1]
+        if (next) Promise.all([decode(next.src.before), decode(next.src.after)]).catch(() => {})
       })
       .catch(() => live && setFailed(track))
     return () => {
@@ -141,7 +167,11 @@ export function useABEngine<T extends ABSource>(list: T[]) {
       stopSources()
       playingRef.current = false
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track])
+
+  // Download every clip in the list in the background.
+  useEffect(() => preload(list), [list])
 
   // Stop everything when the player goes away.
   useEffect(() => () => {
