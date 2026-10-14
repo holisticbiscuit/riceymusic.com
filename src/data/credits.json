@@ -1,5 +1,5 @@
 {
-  "_note": "Transcribed from muso.ai credits screenshots on 2026-10-10, in Muso popularity order. Excluded at user request: Apocalypse, CAN'T STOP, Last Dance, PLAY ROUGH. Hidden roles confirmed by user for Years + SERGIO DO CARMO tracks (Composer, Producer, Mixing, Mastering). Feel removed (no mastering/mixing). Versions merged into one tile per release. Crainaz releases removed at user request (2026-10-10).",
+  "_note": "Transcribed from muso.ai credits screenshots on 2026-10-10, in Muso popularity order. Excluded at user request: Apocalypse, CAN'T STOP, Last Dance, PLAY ROUGH. Hidden roles confirmed by user for Years + SERGIO DO CARMO tracks (Composer, Producer, Mixing, Mastering). Feel removed (no mastering/mixing). Versions merged into one tile per release. Crainaz releases removed at user request (2026-10-10). In The Club removed at user request (2026-10-14).",
   "credits": [
     {
       "title": "It Goes Like",
@@ -37,23 +37,6 @@
       "id": "ryan-de-la-cruz-ms-westminster",
       "art": "/images/credits/ryan-de-la-cruz-ms-westminster.jpg",
       "url": "https://music.apple.com/us/album/ms-westminster/1895732840?i=6764323688&uo=4"
-    },
-    {
-      "title": "In The Club",
-      "artist": "Ricey",
-      "roles": [
-        "Composer",
-        "Mixing",
-        "Mastering"
-      ],
-      "date": "2023-07-14",
-      "versions": [
-        "In The Club",
-        "In The Club (Extended Mix)"
-      ],
-      "id": "ricey-in-the-club",
-      "art": "/images/credits/ricey-in-the-club.jpg",
-      "url": "https://music.apple.com/us/album/in-the-club/1689484689?i=1689484690&uo=4"
     },
     {
       "title": "Spiller",
