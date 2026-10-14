@@ -1,55 +1,135 @@
+import { useEffect, useRef, useState } from 'react'
 import { PageShell } from '../components/PageShell'
 import { Pill } from '../components/Pill'
-import { YearsPlayer } from '../components/YearsPlayer'
+import { Light } from '../components/Light'
+import { PlayButton, Wave } from '../components/Playback'
 import { PLAYLIST, RELEASE, SUPPORT } from '../content'
+import { SEED } from '../lib/credits'
+import { fmt } from '../lib/ab'
+import yearsPeaks from '../data/years-peaks.json'
 
 const EXCERPT = '/audio/years-excerpt.mp3'
 
-function Subhead({ children }: { children: string }) {
-  return <h2 className="mb-8 font-display text-[clamp(2rem,5vw,3rem)] leading-none text-ink">{children}</h2>
+// Releases Ricey wrote or produced, newest first.
+const PRODUCTIONS = SEED.filter(c => c.roles.includes('Composer') || c.roles.includes('Producer'))
+
+function YearsExcerpt({ className }: { className?: string }) {
+  const el = useRef<HTMLAudioElement | null>(null)
+  const [playing, setPlaying] = useState(false)
+  const [t, setT] = useState(0)
+  const [d, setD] = useState(0)
+  useEffect(() => {
+    const a = new Audio(EXCERPT)
+    a.preload = 'metadata'
+    el.current = a
+    const tu = () => setT(a.currentTime)
+    const lm = () => setD(a.duration)
+    const en = () => setPlaying(false)
+    a.addEventListener('timeupdate', tu)
+    a.addEventListener('loadedmetadata', lm)
+    a.addEventListener('ended', en)
+    return () => {
+      a.pause()
+      a.removeEventListener('timeupdate', tu)
+      a.removeEventListener('loadedmetadata', lm)
+      a.removeEventListener('ended', en)
+    }
+  }, [])
+  const toggle = () => {
+    const a = el.current
+    if (!a) return
+    if (a.paused) {
+      void a.play()
+      setPlaying(true)
+    } else {
+      a.pause()
+      setPlaying(false)
+    }
+  }
+  const seek = (ratio: number) => {
+    const a = el.current
+    if (a && isFinite(a.duration)) a.currentTime = Math.max(0, Math.min(1, ratio)) * a.duration
+  }
+  return (
+    <div className={`flex items-center gap-4 ${className ?? ''}`}>
+      <PlayButton playing={playing} onClick={toggle} label="Play Years" />
+      <Wave data={yearsPeaks as number[]} progress={d ? t / d : 0} onSeek={seek} height={48} />
+      <span className="shrink-0 font-mono text-xs tabular-nums text-white/55">{fmt(t)} / {fmt(d)}</span>
+    </div>
+  )
 }
 
 export default function Artist() {
-  const links = RELEASE.links.filter(l => l.url)
   return (
-    <PageShell eyebrow={`${RELEASE.label} · ${RELEASE.year} · ${RELEASE.format}`} title={RELEASE.title}>
-      <section className="grid grid-cols-1 items-start gap-12 md:grid-cols-[320px_minmax(0,1fr)]">
-        <img src={RELEASE.art} alt={`${RELEASE.title} cover art`} className="mx-auto aspect-square w-full max-w-[320px] object-cover shadow-[0_30px_90px_-30px_var(--color-scarf-lift)]" />
-        <div>
-          <p className="max-w-md text-[1.05rem] leading-[1.85] text-white/80">{RELEASE.blurb}</p>
-          <YearsPlayer src={EXCERPT} className="mt-8" />
-          <div className="mt-10 border-t border-white/[0.14]">
-            {links.map(l => (
-              <a
-                key={l.name}
-                href={l.url}
-                target="_blank"
-                rel="noopener"
-                className="group flex items-center justify-between border-b border-white/[0.1] py-4 transition-colors hover:border-white/30"
-              >
-                <span className="font-display text-lg text-ink">{l.name}</span>
-                <span className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-white/50 transition-transform duration-500 group-hover:translate-x-1 group-hover:text-ink">
-                  Play &rarr;
-                </span>
-              </a>
-            ))}
+    <PageShell title="Artist">
+      <Light height={1300} />
+      <div className="relative">
+        <section className="grid items-center gap-10 md:grid-cols-2">
+          <div className="glass rounded-[2rem] p-2">
+            <div className="relative overflow-hidden rounded-3xl bg-black">
+              <img src="/images/portrait-tee.webp" alt="Ricey" className="aspect-[4/5] w-full object-cover object-[50%_30%]" />
+              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
+            </div>
           </div>
-        </div>
-      </section>
+          <div>
+            <h2 className="font-heading text-[clamp(2.4rem,4.5vw,3.6rem)] leading-[1.05] text-ink">
+              Dark, immersive progressive house, made between thought and feeling.
+            </h2>
+            <p className="mt-6 max-w-md leading-relaxed text-white/65">
+              Techno and progressive artist and audio engineer. Debut single Years out now on {RELEASE.label}.
+            </p>
+          </div>
+        </section>
 
-      {SUPPORT.length > 0 && (
-        <section className="mt-28">
-          <Subhead>Support</Subhead>
-          <div className="space-y-16">
+        <section className="glass mt-24 grid gap-8 rounded-3xl p-6 sm:p-9 md:grid-cols-[260px_minmax(0,1fr)] md:items-center">
+          <img src={RELEASE.art} alt="Years cover art" className="aspect-square w-full max-w-[260px] rounded-2xl object-cover" />
+          <div className="min-w-0">
+            <p className="eyebrow text-scarf-text">Latest release</p>
+            <h2 className="mt-3 font-heading text-[3rem] leading-none text-ink">{RELEASE.title}</h2>
+            <p className="mt-4 max-w-lg text-white/70">{RELEASE.blurb}</p>
+            <YearsExcerpt className="mt-7" />
+            <div className="mt-6 flex flex-wrap gap-2">
+              {RELEASE.links.filter(l => l.url).map(l => (
+                <a key={l.name} href={l.url} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-5 text-sm text-ink transition-colors hover:border-white/60">
+                  {l.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-24">
+          <h2 className="mb-8 font-heading text-[2.4rem] leading-none text-ink">Written &amp; produced</h2>
+          <div className="flex gap-4 overflow-x-auto pb-3">
+            {PRODUCTIONS.map(p => {
+              const body = (
+                <>
+                  <img src={p.art} alt={`${p.title} by ${p.artist}`} className="aspect-square w-full rounded-xl object-cover" />
+                  <span className="mt-3 block truncate font-heading text-[1.15rem] text-ink">{p.title}</span>
+                  <span className="block truncate text-sm text-white/50">{p.artist}</span>
+                </>
+              )
+              return p.url ? (
+                <a key={p.id} href={p.url} target="_blank" rel="noopener" className="w-44 shrink-0">{body}</a>
+              ) : (
+                <div key={p.id} className="w-44 shrink-0">{body}</div>
+              )
+            })}
+          </div>
+        </section>
+
+        {SUPPORT.length > 0 && (
+          <section className="glass mt-24 rounded-3xl p-6 sm:p-9">
+            <h2 className="mb-8 font-heading text-[2.4rem] leading-none text-ink">Support</h2>
             {SUPPORT.map(s => (
-              <figure key={s.source} className="grid grid-cols-1 items-center gap-10 md:grid-cols-[240px_minmax(0,1fr)]">
+              <figure key={s.source} className="grid items-center gap-8 md:grid-cols-[220px_minmax(0,1fr)]">
                 {s.youtubeId && (
-                  <div className="mx-auto w-full max-w-[240px] overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/40">
                     <iframe
                       src={`https://www.youtube-nocookie.com/embed/${s.youtubeId}`}
                       title={`${s.source} ${s.context}`}
                       loading="lazy"
-                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                      allow="encrypted-media; picture-in-picture"
                       allowFullScreen
                       className="aspect-[9/16] w-full"
                       style={{ border: 0 }}
@@ -57,23 +137,19 @@ export default function Artist() {
                   </div>
                 )}
                 <figcaption>
-                  <p className="eyebrow mb-4 text-scarf-text">{s.context}</p>
-                  <p className="font-display text-[clamp(2rem,5vw,3.25rem)] leading-none text-ink">{s.source}</p>
-                  {s.quote && <blockquote className="mt-6 max-w-md font-serif text-[1.35rem] italic leading-snug text-white/85">&ldquo;{s.quote}&rdquo;</blockquote>}
-                  {s.url && <Pill href={s.url} className="mt-8">Watch</Pill>}
+                  <p className="eyebrow text-scarf-text">{s.context}</p>
+                  <p className="mt-3 font-heading text-[clamp(2rem,4vw,3rem)] leading-none text-ink">{s.source}</p>
+                  {s.url && <div className="mt-6"><Pill href={s.url}>Watch</Pill></div>}
                 </figcaption>
               </figure>
             ))}
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {PLAYLIST.url && (
-        <section className="mt-28">
-          <Subhead>{PLAYLIST.title}</Subhead>
-          <p className="mb-10 max-w-xl text-[1.1rem] leading-relaxed text-white/75">What is being played, and what is being built from.</p>
-          {PLAYLIST.embedId && (
-            <div className="mb-10 max-w-2xl overflow-hidden rounded-xl">
+        {PLAYLIST.url && (
+          <section className="mt-24">
+            <h2 className="mb-8 font-heading text-[2.4rem] leading-none text-ink">{PLAYLIST.title}</h2>
+            <div className="max-w-3xl overflow-hidden rounded-2xl">
               <iframe
                 src={`https://open.spotify.com/embed/playlist/${PLAYLIST.embedId}?utm_source=generator&theme=0`}
                 title={PLAYLIST.title}
@@ -84,10 +160,9 @@ export default function Artist() {
                 style={{ border: 0 }}
               />
             </div>
-          )}
-          <Pill href={PLAYLIST.url} solid>Open in Spotify</Pill>
-        </section>
-      )}
+          </section>
+        )}
+      </div>
     </PageShell>
   )
 }

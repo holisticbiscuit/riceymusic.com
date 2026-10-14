@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router'
 // and no render-blocking stylesheet. Bodoni carries its optical-size axis so
 // the display wordmark uses the true high-contrast hairline design.
 import '@fontsource-variable/bodoni-moda/opsz.css'
+import '@fontsource/cormorant-garamond/latin-500.css'
 import '@fontsource/instrument-serif/latin-400.css'
 import '@fontsource/instrument-serif/latin-400-italic.css'
 import '@fontsource-variable/inter/wght.css'
