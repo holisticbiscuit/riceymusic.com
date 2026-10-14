@@ -6,6 +6,8 @@ import { usePageTitle } from '../lib/usePageTitle'
 import { Pill } from '../components/Pill'
 import { LoginForm } from './admin/LoginForm'
 import { CreditForm } from './admin/CreditForm'
+import { ABAdmin } from './admin/ABAdmin'
+import { cn } from '../lib/utils'
 
 // Private page: not linked anywhere and kept out of search results.
 function useNoIndex() {
@@ -25,6 +27,7 @@ export default function Admin() {
   const [credits, setCredits] = useState<Credit[] | null>(null)
   const [editing, setEditing] = useState<Credit | 'new' | null>(null)
   const [error, setError] = useState('')
+  const [tab, setTab] = useState<'credits' | 'ab'>('credits')
 
   const signOut = useCallback(() => {
     setToken(null)
@@ -85,7 +88,7 @@ export default function Admin() {
           <Link to="/" className="font-display text-lg tracking-[0.22em] text-ink">RICEY</Link>
           {signedIn && <button type="button" onClick={signOut} className="eyebrow min-h-11 text-white/60 hover:text-ink">Sign out</button>}
         </header>
-        <h1 className="mb-10 font-display text-[clamp(2.5rem,7vw,4.5rem)] leading-none text-ink">Credits admin</h1>
+        <h1 className="mb-8 font-heading text-[clamp(2.75rem,7vw,4.5rem)] leading-none text-ink">Admin</h1>
 
         {!API_URL ? (
           <p className="text-white/70">The admin needs the API. Set <code>VITE_API_URL</code> and rebuild.</p>
@@ -93,6 +96,18 @@ export default function Admin() {
           <LoginForm onSignedIn={() => setSignedIn(true)} />
         ) : (
           <>
+            <div role="tablist" aria-label="Section" className="mb-10 inline-flex rounded-full bg-black/40 p-1">
+              {([['credits', 'Credits'], ['ab', 'Before / After']] as const).map(([id, label]) => (
+                <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={cn('min-h-11 rounded-full px-6 text-sm transition-colors', tab === id ? 'bg-ink text-black' : 'text-white/70 hover:text-ink')}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'ab' ? (
+              <ABAdmin credits={credits?.length ? credits : SEED} onAuthError={signOut} />
+            ) : (
+            <>
             {error && !editing && <p role="alert" className="mb-6 rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
 
             {editing ? (
@@ -119,7 +134,7 @@ export default function Admin() {
                   <li key={c.id} className="flex items-center gap-4 py-3">
                     {c.art ? <img src={c.art} alt="" className="h-14 w-14 shrink-0 object-cover" /> : <span className="h-14 w-14 shrink-0 bg-scarf" />}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-display text-lg leading-tight text-ink">{c.title}</p>
+                      <p className="truncate font-heading text-xl leading-tight text-ink">{c.title}</p>
                       <p className="truncate text-sm text-white/60">{c.artist} <span className="text-white/35">{c.date}</span></p>
                       <p className="mt-1 flex flex-wrap gap-x-3 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-scarf-text">
                         {sortRoles(c.roles).map(r => <span key={r}>{r}</span>)}
@@ -131,6 +146,8 @@ export default function Admin() {
                 ))}
               </ul>
               </>
+            )}
+            </>
             )}
           </>
         )}

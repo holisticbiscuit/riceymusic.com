@@ -6,9 +6,10 @@
 // trims both to the shorter length, encodes MP3s to public/audio/ab/ (turning each pair down
 // together so neither peaks above -1 dBTP), measures integrated
 // loudness (EBU R128) for Level match, and draws a waveform. The results go to
-// src/data/ab-tracks.json, keyed by the release title on the Credits page.
+// src/data/ab-tracks.json with the release's details from src/data/credits.json. The
+// admin's Before / After upload does the same in the browser; this is for doing it in bulk.
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 
 const SRC = process.argv[2]
@@ -90,7 +91,8 @@ const groups = {}
 for (const f of wavs) (groups[titleOf(f)] ??= {})[versionOf(f)] = f
 
 mkdirSync(OUT_AUDIO, { recursive: true })
-const data = {}
+const credits = JSON.parse(readFileSync('src/data/credits.json', 'utf8')).credits
+const data = JSON.parse(readFileSync(OUT_DATA, 'utf8'))
 for (const title of TITLES) {
   const g = groups[title]
   if (!g?.before || !g?.after) { console.log(`skip ${title}: missing ${!g?.before ? 'before' : 'after'}`); continue }
@@ -121,7 +123,10 @@ for (const title of TITLES) {
   // Normalise both waveforms to the louder of the pair, so the quieter version looks quieter.
   const top = Math.max(...peaks.before, ...peaks.after)
   for (const v of ['before', 'after']) peaks[v] = peaks[v].map(p => Math.round((p / top) * 1000) / 1000)
-  data[title] = { src: files, lufs: { before: loud.before.I, after: loud.after.I }, peaks, duration: Math.round(len * 100) / 100 }
+  const c = credits.find(x => x.title === title)
+  const mix = c.roles.includes('Mixing'), master = c.roles.includes('Mastering')
+  const mode = mix && master ? 'Mixing & mastering' : master ? 'Mastering' : 'Mixing'
+  data[slug(title)] = { title, artist: c.artist, ...(c.art && { art: c.art }), date: c.date, mode, src: files, lufs: { before: loud.before.I, after: loud.after.I }, duration: Math.round(len * 100) / 100, peaks }
   console.log(`${title.padEnd(20)} offset ${(off * 1000).toFixed(0).padStart(4)} ms  ${len.toFixed(1)} s  gain ${gain.toFixed(1)} dB  LUFS ${loud.before.I} → ${loud.after.I}  true peak ${loud.before.peak} / ${loud.after.peak} dBTP`)
 }
 writeFileSync(OUT_DATA, JSON.stringify(data) + '\n')

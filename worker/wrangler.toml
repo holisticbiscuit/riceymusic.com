@@ -4,6 +4,9 @@ compatibility_date = "2026-09-01"
 
 [vars]
 ALLOWED_ORIGINS = "https://riceymusic.com,https://www.riceymusic.com,http://localhost:5173,http://localhost:4173"
+# Before / After uploads commit here; a push to this branch redeploys the site.
+GITHUB_REPO = "holisticbiscuit/riceymusic.com"
+GITHUB_BRANCH = "master"
 
 # Created with `npx wrangler kv namespace create CREDITS`.
 [[kv_namespaces]]
@@ -11,4 +14,4 @@ binding = "CREDITS"
 id = "bbe400e1442b4e61903009d426466f70"
 
 # Secrets, set with `npx wrangler secret put <NAME>` (never committed):
-#   ADMIN_USER, ADMIN_PASS, TOKEN_SECRET
+#   ADMIN_USER, ADMIN_PASS, TOKEN_SECRET, GITHUB_TOKEN

@@ -1,32 +1,31 @@
 import abTracks from '../data/ab-tracks.json'
-import { SEED } from './credits'
 import { useABEngine, type Version } from './abEngine'
 
 export type { Version }
 
+export type Mode = 'Mixing' | 'Mastering' | 'Mixing & mastering'
+
+// One before/after pair, as stored in src/data/ab-tracks.json. Made by the admin's upload
+// (or scripts/ab-encode.mjs); each entry carries its own release details.
 export type ABTrack = {
+  id: string
   title: string
   artist: string
   art?: string
-  roles: string[]
+  date: string // release date, yyyy-mm-dd; the list is newest first
+  mode: Mode // which comparison it appears under
   src: Record<Version, string>
-  lufs: Record<Version, number> // integrated loudness, measured with ffmpeg ebur128
+  lufs: Record<Version, number> // integrated loudness (EBU R128) of each clip, for Level match
+  duration: number
   peaks: Record<Version, number[]> // 160 RMS bins, normalised to the louder of the pair
 }
 
-// Made by scripts/ab-encode.mjs from the before/after WAVs, keyed by release title.
-const AUDIO = abTracks as Record<string, Pick<ABTrack, 'src' | 'lufs' | 'peaks'>>
+export const toTracks = (data: Record<string, Omit<ABTrack, 'id'>>): ABTrack[] =>
+  Object.entries(data)
+    .map(([id, t]) => ({ ...t, id }))
+    .sort((a, b) => b.date.localeCompare(a.date))
 
-// Every release with before/after audio, newest first like the Credits page.
-export const AB_TRACKS: ABTrack[] = SEED.filter(c => AUDIO[c.title]).map(c => ({
-  ...AUDIO[c.title],
-  title: c.title,
-  artist: c.artist,
-  art: c.art,
-  roles: c.roles,
-}))
-
-export type Mode = 'Mixing' | 'Mastering' | 'Mixing & mastering'
+export const AB_TRACKS: ABTrack[] = toTracks(abTracks as Record<string, Omit<ABTrack, 'id'>>)
 
 export const MODES: { mode: Mode; blurb: string }[] = [
   { mode: 'Mixing', blurb: 'Balance, space and punch. The raw stems against the finished mix.' },
@@ -34,14 +33,10 @@ export const MODES: { mode: Mode; blurb: string }[] = [
   { mode: 'Mixing & mastering', blurb: 'The whole journey. The raw stems against the release-ready master.' },
 ]
 
-// Each release sits in exactly one group, matching its roles on the Credits page.
-export const inMode = (t: ABTrack, m: Mode) => {
-  const mix = t.roles.includes('Mixing')
-  const master = t.roles.includes('Mastering')
-  return m === 'Mixing' ? mix && !master : m === 'Mastering' ? master && !mix : mix && master
-}
+// Each pair sits under one comparison.
+export const inMode = (t: ABTrack, m: Mode) => t.mode === m
 
-// Only groups that have releases are offered; Mixing appears once a mixing-only credit exists.
+// Only comparisons that have pairs are offered.
 export const ACTIVE_MODES = MODES.filter(m => AB_TRACKS.some(t => inMode(t, m.mode)))
 
 // The waveform to draw: with level match on, the louder version's bars shrink by the same
