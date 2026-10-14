@@ -141,7 +141,7 @@ export default function BeforeAfter() {
           <p className="mt-4 max-w-xl font-heading text-[1.6rem] leading-snug text-ink">
             Send a finished mix to be mastered, or your stems to be mixed and mastered.
           </p>
-          <p className="mt-4 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/45">Mastering from £50 per track</p>
+          <p className="mt-4 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/45">Mastering from £80 per track</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Pill to="/services">Rates</Pill>

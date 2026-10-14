@@ -11,7 +11,7 @@ type Id = 'master' | 'stems' | 'mixmaster'
 const CARDS: { id: Id; name: string; desc: string; price: string; unit: string }[] = [
   { id: 'master', name: RATES[0].name, desc: RATES[0].desc, price: RATES[0].price, unit: RATES[0].unit },
   { id: 'stems', name: RATES[1].name, desc: RATES[1].desc, price: RATES[1].price, unit: RATES[1].unit },
-  { id: 'mixmaster', name: 'Mixing & mastering', desc: 'From your stems to the release master. Balanced, finished and ready to go out.', price: '£250', unit: '/ track' },
+  { id: 'mixmaster', name: 'Mixing & mastering', desc: 'From your stems to the release master. Balanced, finished and ready to go out.', price: '£300', unit: '/ track' },
 ]
 
 const STEPS = [
@@ -45,7 +45,7 @@ export default function Services() {
   const [id, setId] = useState<Id>('master')
   const [tracks, setTracks] = useState(1)
   const [stems, setStems] = useState(6)
-  const per = id === 'master' ? 50 : id === 'stems' ? 50 + 10 * stems : 250
+  const per = id === 'master' ? 80 : id === 'stems' ? 80 + 10 * stems : 300
   const card = CARDS.find(c => c.id === id)!
 
   return (
@@ -92,7 +92,7 @@ export default function Services() {
             <p className="eyebrow text-white/45">Total</p>
             <p className="mt-2 font-heading text-[3.5rem] leading-none text-ink">£{per * tracks}</p>
             <p className="mt-2 text-sm text-white/50">
-              {id === 'stems' ? `£50 + £10 × ${stems} stems` : `£${per}`} × {tracks} {tracks === 1 ? 'track' : 'tracks'}
+              {id === 'stems' ? `£80 + £10 × ${stems} stems` : `£${per}`} × {tracks} {tracks === 1 ? 'track' : 'tracks'}
             </p>
             <div className="mt-6"><Pill to="/contact" solid>{id === 'master' ? 'Send your mix' : 'Send your stems'}</Pill></div>
           </div>

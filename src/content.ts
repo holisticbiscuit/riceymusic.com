@@ -54,13 +54,13 @@ export const RATES = [
   {
     name: 'Mastering',
     desc: 'A single track, finished for release. Loud where it should be, clear everywhere it plays.',
-    price: '£50',
+    price: '£80',
     unit: '/ track',
   },
   {
     name: 'Stem Mastering',
     desc: 'The same finish, working from grouped stems. More room to move when the mix calls for it.',
-    price: '£50',
+    price: '£80',
     unit: '+ £10 / stem',
   },
 ]
