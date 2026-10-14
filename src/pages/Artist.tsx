@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { PageShell } from '../components/PageShell'
 import { Pill } from '../components/Pill'
 import { Light } from '../components/Light'
-import { PlayButton, Wave } from '../components/Playback'
+import { PlayButton, Volume, Wave } from '../components/Playback'
 import { PLAYLIST, RELEASE, SUPPORT } from '../content'
 import { SEED } from '../lib/credits'
 import { fmt } from '../lib/ab'
+import { useVolume } from '../lib/abEngine'
 import yearsPeaks from '../data/years-peaks.json'
 
 const EXCERPT = '/audio/years-excerpt.mp3'
@@ -18,6 +19,7 @@ function YearsExcerpt({ className }: { className?: string }) {
   const [playing, setPlaying] = useState(false)
   const [t, setT] = useState(0)
   const [d, setD] = useState(0)
+  const [vol, setVol] = useVolume()
   useEffect(() => {
     const a = new Audio(EXCERPT)
     a.preload = 'metadata'
@@ -35,6 +37,11 @@ function YearsExcerpt({ className }: { className?: string }) {
       a.removeEventListener('ended', en)
     }
   }, [])
+  // Declared after the player is made, so it also sets the starting volume. Squared, so the
+  // slider feels even to the ear.
+  useEffect(() => {
+    if (el.current) el.current.volume = vol * vol
+  }, [vol])
   const toggle = () => {
     const a = el.current
     if (!a) return
@@ -51,10 +58,13 @@ function YearsExcerpt({ className }: { className?: string }) {
     if (a && isFinite(a.duration)) a.currentTime = Math.max(0, Math.min(1, ratio)) * a.duration
   }
   return (
-    <div className={`flex items-center gap-4 ${className ?? ''}`}>
-      <PlayButton playing={playing} onClick={toggle} label="Play Years" />
-      <Wave data={yearsPeaks as number[]} progress={d ? t / d : 0} onSeek={seek} height={48} />
-      <span className="shrink-0 font-mono text-xs tabular-nums text-white/55">{fmt(t)} / {fmt(d)}</span>
+    <div className={className}>
+      <div className="flex items-center gap-4">
+        <PlayButton playing={playing} onClick={toggle} label="Play Years" />
+        <Wave data={yearsPeaks as number[]} progress={d ? t / d : 0} onSeek={seek} height={48} />
+        <span className="shrink-0 font-mono text-xs tabular-nums text-white/55">{fmt(t)} / {fmt(d)}</span>
+      </div>
+      <Volume value={vol} onChange={setVol} className="mt-3 -ml-3" />
     </div>
   )
 }

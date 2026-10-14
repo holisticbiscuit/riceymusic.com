@@ -59,6 +59,20 @@ const savedVolume = () => {
   }
 }
 
+// The listening volume, remembered in this browser and shared by every player on the site.
+export function useVolume() {
+  const [vol, setVolState] = useState(savedVolume)
+  const setVol = useCallback((v: number) => {
+    setVolState(v)
+    try {
+      localStorage.setItem(VOLUME_KEY, String(v))
+    } catch {
+      /* private window */
+    }
+  }, [])
+  return [vol, setVol] as const
+}
+
 // Before and after are decoded in full, then started on the same audio clock, so they stay
 // sample-locked with no buffering once loaded. Switching crossfades over a few milliseconds
 // and keeps your place. Level match turns the louder version down by the measured LUFS gap,
@@ -72,7 +86,7 @@ export function useABEngine<T extends ABSource>(list: T[]) {
   const [loaded, setLoaded] = useState<{ track: T; dur: number } | null>(null)
   const [failed, setFailed] = useState<T | null>(null)
   const [match, setMatch] = useState(false)
-  const [vol, setVolState] = useState(savedVolume)
+  const [vol, setVol] = useVolume()
   const track = list[Math.min(idx, list.length - 1)]
 
   const buffers = useRef<Record<Version, AudioBuffer> | null>(null)
@@ -227,15 +241,6 @@ export function useABEngine<T extends ABSource>(list: T[]) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track])
-
-  const setVol = (v: number) => {
-    setVolState(v)
-    try {
-      localStorage.setItem(VOLUME_KEY, String(v))
-    } catch {
-      /* private window */
-    }
-  }
 
   const select = (i: number) => setIdx(i)
 
