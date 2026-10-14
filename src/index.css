@@ -189,3 +189,38 @@ button:focus:not(:focus-visible) { outline: none; }
   background: linear-gradient(160deg, rgba(120, 150, 255, 0.12), rgba(47, 79, 168, 0.06) 60%, rgba(147, 168, 220, 0.08));
   border-color: rgba(190, 205, 255, 0.28);
 }
+
+/* Thin slider: ink fill up to --fill, faint track after it, small round thumb. */
+.range {
+  appearance: none;
+  background: transparent;
+}
+.range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--color-ink) var(--fill, 50%), rgb(255 255 255 / 0.2) var(--fill, 50%));
+}
+.range::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--color-ink) var(--fill, 50%), rgb(255 255 255 / 0.2) var(--fill, 50%));
+}
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -5px;
+  border-radius: 999px;
+  background: var(--color-ink);
+}
+.range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-ink);
+}
+.range:focus-visible {
+  outline: 2px solid var(--color-scarf-text);
+  outline-offset: 2px;
+}

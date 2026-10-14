@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PageShell } from '../components/PageShell'
 import { Pill } from '../components/Pill'
-import { PlayButton, Wave } from '../components/Playback'
+import { PlayButton, Volume, Wave } from '../components/Playback'
 import { ACTIVE_MODES, AB_TRACKS, fmt, inMode, shownPeaks, useAB, type ABTrack, type Mode } from '../lib/ab'
 import { cn } from '../lib/utils'
 
@@ -82,7 +82,7 @@ function Player({ mode, onBack }: { mode: Mode; onBack: () => void }) {
             <h2 className="font-heading text-[clamp(2rem,4vw,3.25rem)] leading-none text-ink">{ab.track.title}</h2>
             <p className="mt-2 text-white/60">{ab.track.artist}</p>
             <div className="mt-6 flex flex-wrap items-center gap-4">
-              <PlayButton playing={ab.playing} onClick={ab.play} />
+              <PlayButton playing={ab.playing} onClick={ab.play} loading={ab.loading} />
               <div role="radiogroup" aria-label="Version" className="relative inline-flex rounded-full bg-black/40 p-1">
                 <span
                   aria-hidden
@@ -105,13 +105,17 @@ function Player({ mode, onBack }: { mode: Mode; onBack: () => void }) {
               <span className="font-mono text-xs tabular-nums text-white/55">{fmt(ab.time)} / {fmt(ab.dur)}</span>
             </div>
             <Wave data={shownPeaks(ab.track, ab.version, ab.match)} progress={progress} onSeek={ab.seek} className="mt-7" />
-            <label className="mt-6 flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm text-white/80">
-              <span className={cn('relative h-7 w-12 rounded-full transition-colors', ab.match ? 'bg-scarf-lift' : 'bg-white/15')}>
-                <span className={cn('absolute top-1 h-5 w-5 rounded-full bg-ink transition-transform', ab.match ? 'translate-x-6' : 'translate-x-1')} />
-              </span>
-              <input type="checkbox" className="sr-only" checked={ab.match} onChange={e => ab.setMatch(e.target.checked)} />
-              Level match
-            </label>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+              <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm text-white/80">
+                <span className={cn('relative h-7 w-12 rounded-full transition-colors', ab.match ? 'bg-scarf-lift' : 'bg-white/15')}>
+                  <span className={cn('absolute top-1 h-5 w-5 rounded-full bg-ink transition-transform', ab.match ? 'translate-x-6' : 'translate-x-1')} />
+                </span>
+                <input type="checkbox" className="sr-only" checked={ab.match} onChange={e => ab.setMatch(e.target.checked)} />
+                Level match
+              </label>
+              <Volume value={ab.vol} onChange={ab.setVol} />
+            </div>
+            {ab.failed && <p className="mt-3 text-sm text-white/55">This clip didn&rsquo;t load. Check your connection and pick it again.</p>}
           </div>
         </div>
       </div>

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
 import abTracks from '../data/ab-tracks.json'
 import { SEED } from './credits'
+import { useABEngine, type Version } from './abEngine'
 
-export type Version = 'before' | 'after'
+export type { Version }
 
 export type ABTrack = {
   title: string
@@ -56,92 +56,6 @@ export const shownPeaks = (t: ABTrack, v: Version, match: boolean) => {
 
 export const fmt = (s: number) => (isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00')
 
-// Both versions play together and stay in sync; the one you hear is unmuted, so switching is
-// instant and keeps your place. Level match turns the louder version down by the measured
-// LUFS gap, so the master is judged on tone and punch rather than loudness alone.
-export function useAB(list: ABTrack[]) {
-  const [idx, setIdx] = useState(0)
-  const [version, setVersion] = useState<Version>('before')
-  const [playing, setPlaying] = useState(false)
-  const [time, setTime] = useState(0)
-  const [dur, setDur] = useState(0)
-  const [match, setMatch] = useState(false)
-  const els = useRef<Record<Version, HTMLAudioElement> | null>(null)
-  const track = list[Math.min(idx, list.length - 1)]
-
-  useEffect(() => {
-    const before = new Audio(track.src.before)
-    const after = new Audio(track.src.after)
-    before.preload = after.preload = 'auto'
-    els.current = { before, after }
-    const onTime = () => setTime(before.currentTime)
-    const onMeta = () => setDur(before.duration)
-    const onEnd = () => setPlaying(false)
-    before.addEventListener('timeupdate', onTime)
-    before.addEventListener('loadedmetadata', onMeta)
-    before.addEventListener('ended', onEnd)
-    return () => {
-      before.pause()
-      after.pause()
-      before.removeEventListener('timeupdate', onTime)
-      before.removeEventListener('loadedmetadata', onMeta)
-      before.removeEventListener('ended', onEnd)
-      els.current = null
-    }
-  }, [track])
-
-  useEffect(() => {
-    const e = els.current
-    if (!e) return
-    const gap = track.lufs.after - track.lufs.before
-    const trim = match ? Math.pow(10, -Math.abs(gap) / 20) : 1
-    e.before.volume = gap < 0 ? trim : 1
-    e.after.volume = gap > 0 ? trim : 1
-    e.before.muted = version !== 'before'
-    e.after.muted = version !== 'after'
-  }, [version, match, track, playing])
-
-  const play = useCallback(async () => {
-    const e = els.current
-    if (!e) return
-    if (!e.before.paused) {
-      e.before.pause()
-      e.after.pause()
-      setPlaying(false)
-      return
-    }
-    e.after.currentTime = e.before.currentTime
-    await Promise.all([e.before.play(), e.after.play()]).catch(() => {})
-    setPlaying(true)
-  }, [])
-
-  const seek = useCallback((ratio: number) => {
-    const e = els.current
-    if (!e || !isFinite(e.before.duration)) return
-    const t = Math.max(0, Math.min(1, ratio)) * e.before.duration
-    e.before.currentTime = e.after.currentTime = t
-    setTime(t)
-  }, [])
-
-  // Keep the two clocks locked while playing.
-  useEffect(() => {
-    if (!playing) return
-    const id = setInterval(() => {
-      const e = els.current
-      if (e && Math.abs(e.after.currentTime - e.before.currentTime) > 0.04) e.after.currentTime = e.before.currentTime
-    }, 500)
-    return () => clearInterval(id)
-  }, [playing])
-
-  const select = (i: number) => {
-    if (i === idx) return
-    setPlaying(false)
-    setTime(0)
-    setDur(0)
-    setIdx(i)
-  }
-
-  return { idx, track, version, setVersion, playing, play, time, dur, seek, match, setMatch, select }
-}
+export const useAB = (list: ABTrack[]) => useABEngine(list)
 
 export type AB = ReturnType<typeof useAB>
