@@ -6,7 +6,7 @@
 // once it has a URL, so nothing on the site is ever a dead link.
 // ---------------------------------------------------------------------------
 
-export const EMAIL = 'contact@riceymusic.com'
+export const EMAIL = 'oliverraiss@pm.me'
 export const INSTAGRAM = 'https://www.instagram.com/riceymusic/'
 export const SOUNDCLOUD = 'https://soundcloud.com/riceymusic'
 export const SPOTIFY_TRACK = 'https://open.spotify.com/track/6IcqC8WxfxqSkZU4AEIV3c'
