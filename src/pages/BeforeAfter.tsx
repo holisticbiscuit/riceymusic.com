@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { PageShell } from '../components/PageShell'
 import { Pill } from '../components/Pill'
 import { PlayButton, Wave } from '../components/Playback'
-import { ACTIVE_MODES, AB_TRACKS, fmt, inMode, useAB, type ABTrack, type Mode } from '../lib/ab'
+import { ACTIVE_MODES, AB_TRACKS, fmt, inMode, shownPeaks, useAB, type ABTrack, type Mode } from '../lib/ab'
 import { cn } from '../lib/utils'
 
 function Art({ track, className }: { track: ABTrack; className?: string }) {
@@ -104,7 +104,7 @@ function Player({ mode, onBack }: { mode: Mode; onBack: () => void }) {
               </div>
               <span className="font-mono text-xs tabular-nums text-white/55">{fmt(ab.time)} / {fmt(ab.dur)}</span>
             </div>
-            <Wave data={ab.track.peaks[ab.version]} progress={progress} onSeek={ab.seek} className="mt-7" />
+            <Wave data={shownPeaks(ab.track, ab.version, ab.match)} progress={progress} onSeek={ab.seek} className="mt-7" />
             <label className="mt-6 flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm text-white/80">
               <span className={cn('relative h-7 w-12 rounded-full transition-colors', ab.match ? 'bg-scarf-lift' : 'bg-white/15')}>
                 <span className={cn('absolute top-1 h-5 w-5 rounded-full bg-ink transition-transform', ab.match ? 'translate-x-6' : 'translate-x-1')} />

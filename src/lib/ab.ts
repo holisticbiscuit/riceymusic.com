@@ -44,6 +44,16 @@ export const inMode = (t: ABTrack, m: Mode) => {
 // Only groups that have releases are offered; Mixing appears once a mixing-only credit exists.
 export const ACTIVE_MODES = MODES.filter(m => AB_TRACKS.some(t => inMode(t, m.mode)))
 
+// The waveform to draw: with level match on, the louder version's bars shrink by the same
+// gain the player applies, so what you see matches what you hear.
+export const shownPeaks = (t: ABTrack, v: Version, match: boolean) => {
+  const gap = t.lufs.after - t.lufs.before
+  const louder: Version = gap > 0 ? 'after' : 'before'
+  if (!match || v !== louder) return t.peaks[v]
+  const trim = Math.pow(10, -Math.abs(gap) / 20)
+  return t.peaks[v].map(p => p * trim)
+}
+
 export const fmt = (s: number) => (isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00')
 
 // Both versions play together and stay in sync; the one you hear is unmuted, so switching is

@@ -44,7 +44,7 @@ export function Wave({ data, progress, onSeek, height = 56, className }: { data:
       {data.map((v, i) => (
         <span
           key={i}
-          className={cn('min-w-0 flex-1 rounded-full transition-colors', i % 2 === 1 && 'max-sm:hidden', i / data.length < progress ? 'bg-ink' : 'bg-white/25')}
+          className={cn('min-w-0 flex-1 rounded-full transition-[height,background-color] duration-300', i % 2 === 1 && 'max-sm:hidden', i / data.length < progress ? 'bg-ink' : 'bg-white/25')}
           style={{ height: `${Math.max(6, Math.sqrt(v) * 100)}%` }}
         />
       ))}
