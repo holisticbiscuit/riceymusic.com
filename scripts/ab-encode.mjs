@@ -3,7 +3,8 @@
 //   node scripts/ab-encode.mjs "C:/Users/phaseman42/Documents/Ricey AB"
 //
 // For each release it finds the two WAVs (anywhere under the folder), checks they line up,
-// trims both to the shorter length, encodes MP3s to public/audio/ab/, measures integrated
+// trims both to the shorter length, encodes MP3s to public/audio/ab/ (turning each pair down
+// together so neither peaks above -1 dBTP), measures integrated
 // loudness (EBU R128) for Level match, and draws a waveform. The results go to
 // src/data/ab-tracks.json, keyed by the release title on the Credits page.
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -15,6 +16,7 @@ if (!SRC) throw new Error('Pass the folder with the WAVs')
 const OUT_AUDIO = 'public/audio/ab'
 const OUT_DATA = 'src/data/ab-tracks.json'
 const BINS = 160
+const CEILING = -1 // dBTP, the most either clip of a pair may peak at after encoding
 const RATE = 11025 // analysis rate for alignment and waveform; the MP3s keep the source rate
 
 // Release titles as they appear in src/data/credits.json, matched loosely against file names.
@@ -100,18 +102,27 @@ for (const title of TITLES) {
   const files = {}
   const peaks = {}
   const loud = {}
-  for (const [v, f, start] of [['before', g.before, startA], ['after', g.after, startB]]) {
-    const out = `${OUT_AUDIO}/${slug(title)}-${v}.mp3`
-    execFileSync('ffmpeg', ['-v', 'error', '-y', '-ss', String(start), '-t', String(len), '-i', f, '-c:a', 'libmp3lame', '-q:a', '2', '-map_metadata', '-1', out])
-    files[v] = '/' + out.replace(/^public\//, '')
-    loud[v] = loudness(out)
-    peaks[v] = rmsBins(pcm(out))
+  // Encode the pair with the same gain, then turn both down together until the louder one's
+  // true peak (measured on the decoded MP3) sits at or below CEILING, so neither clips and the
+  // before/after gap is unchanged.
+  let gain = 0
+  for (let pass = 0; pass < 4; pass++) {
+    for (const [v, f, start] of [['before', g.before, startA], ['after', g.after, startB]]) {
+      const out = `${OUT_AUDIO}/${slug(title)}-${v}.mp3`
+      execFileSync('ffmpeg', ['-v', 'error', '-y', '-ss', String(start), '-t', String(len), '-i', f, '-af', `volume=${gain.toFixed(2)}dB`, '-c:a', 'libmp3lame', '-q:a', '2', '-map_metadata', '-1', out])
+      files[v] = '/' + out.replace(/^public\//, '')
+      loud[v] = loudness(out)
+    }
+    const over = Math.max(loud.before.peak, loud.after.peak) - CEILING
+    if (over <= 0) break
+    gain -= over + 0.1
   }
+  for (const v of ['before', 'after']) peaks[v] = rmsBins(pcm(`${OUT_AUDIO}/${slug(title)}-${v}.mp3`))
   // Normalise both waveforms to the louder of the pair, so the quieter version looks quieter.
   const top = Math.max(...peaks.before, ...peaks.after)
   for (const v of ['before', 'after']) peaks[v] = peaks[v].map(p => Math.round((p / top) * 1000) / 1000)
   data[title] = { src: files, lufs: { before: loud.before.I, after: loud.after.I }, peaks, duration: Math.round(len * 100) / 100 }
-  console.log(`${title.padEnd(20)} offset ${(off * 1000).toFixed(0).padStart(4)} ms  ${len.toFixed(1)} s  LUFS ${loud.before.I} → ${loud.after.I}  peak ${loud.before.peak} / ${loud.after.peak} dBFS`)
+  console.log(`${title.padEnd(20)} offset ${(off * 1000).toFixed(0).padStart(4)} ms  ${len.toFixed(1)} s  gain ${gain.toFixed(1)} dB  LUFS ${loud.before.I} → ${loud.after.I}  true peak ${loud.before.peak} / ${loud.after.peak} dBTP`)
 }
 writeFileSync(OUT_DATA, JSON.stringify(data) + '\n')
 console.log(`wrote ${OUT_DATA}`)
