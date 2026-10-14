@@ -26,7 +26,7 @@ export function Nav() {
 
   return (
     <header className="absolute inset-x-0 top-0 z-40">
-      <nav aria-label="Primary" className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-5 sm:px-8">
+      <nav aria-label="Primary" className="flex h-16 items-center justify-between px-5 sm:px-8 lg:px-10">
         <Link to="/" className="font-display text-lg tracking-[0.22em] text-ink">RICEY</Link>
         <div className="hidden items-center gap-7 md:flex">
           {LINKS.map(([to, label]) => (
