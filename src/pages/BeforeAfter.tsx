@@ -6,6 +6,9 @@ import { ACTIVE_MODES, AB_TRACKS, fmt, inMode, shownPeaks, useAB, type ABTrack, 
 import { preload, warm } from '../lib/abEngine'
 import { cn } from '../lib/utils'
 
+const BODY = 'text-[1.05rem] leading-relaxed text-white/70'
+const PANEL = 'rounded-3xl border border-white/[0.08] bg-black/25'
+
 function Art({ track, className }: { track: ABTrack; className?: string }) {
   return track.art ? (
     <img src={track.art} alt={`${track.title} cover`} className={cn('aspect-square object-cover', className)} />
@@ -23,10 +26,10 @@ function Choose({ onPick }: { onPick: (m: Mode) => void }) {
   }, [])
   return (
     <>
-      <p className="mx-auto mb-12 max-w-xl text-center text-[1.1rem] leading-relaxed text-white/70">
+      <p className={cn('mx-auto mb-14 max-w-[60ch] text-balance text-center', BODY)}>
         Choose what you want to hear, then switch between before and after while it plays.
       </p>
-      <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
+      <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
         {ACTIVE_MODES.map(({ mode, blurb }) => {
           const tracks = AB_TRACKS.filter(t => inMode(t, mode))
           return (
@@ -37,10 +40,10 @@ function Choose({ onPick }: { onPick: (m: Mode) => void }) {
               onPointerEnter={() => warm(tracks[0])}
               onPointerDown={() => warm(tracks[0])}
               onFocus={() => warm(tracks[0])}
-              className="group flex flex-col overflow-hidden rounded-3xl border border-white/[0.08] bg-black/25 text-left transition-colors hover:border-white/25"
+              className={cn(PANEL, 'group flex flex-col overflow-hidden text-left transition-colors hover:border-white/25')}
             >
               {tracks.length >= 3 ? (
-                <span className="grid grid-cols-3">
+                <span className="grid grid-cols-3 overflow-hidden">
                   {tracks.slice(0, 3).map(t => (
                     <Art key={t.title} track={t} className="w-full transition-transform duration-700 group-hover:scale-[1.03]" />
                   ))}
@@ -56,9 +59,9 @@ function Choose({ onPick }: { onPick: (m: Mode) => void }) {
                   )}
                 </span>
               )}
-              <span className="flex flex-1 flex-col p-6">
+              <span className="flex flex-1 flex-col p-6 sm:p-7">
                 <span className="font-heading text-[2rem] leading-none text-ink">{mode}</span>
-                <span className="mt-3 flex-1 text-[0.95rem] leading-relaxed text-white/65">{blurb}</span>
+                <span className={cn('mt-3 flex-1', BODY)}>{blurb}</span>
                 <span className="mt-6 flex items-center justify-between font-mono text-[0.62rem] uppercase tracking-[0.2em] text-white/45">
                   {tracks.length} {tracks.length === 1 ? 'track' : 'tracks'}
                   <span className="text-ink transition-transform group-hover:translate-x-1">Listen &rarr;</span>
@@ -79,17 +82,17 @@ function Player({ mode, onBack }: { mode: Mode; onBack: () => void }) {
   const progress = ab.dur ? ab.time / ab.dur : 0
   return (
     <>
-      <button type="button" onClick={onBack} className="mb-6 flex min-h-11 items-center gap-2 text-sm text-white/65 hover:text-ink">
+      <button type="button" onClick={onBack} className="mb-6 flex min-h-11 items-center gap-2 text-sm text-white/70 transition-colors hover:text-ink">
         <span aria-hidden>&larr;</span> All comparisons
       </button>
 
-      <div className="rounded-3xl border border-white/[0.08] bg-black/25 p-5 backdrop-blur-sm sm:p-8">
-        <div className="grid gap-8 md:grid-cols-[300px_minmax(0,1fr)] md:items-center">
-          <Art track={ab.track} className="w-full max-w-[300px] rounded-xl shadow-[0_30px_80px_-30px_rgba(47,79,168,0.7)]" />
+      <div className={cn(PANEL, 'p-5 backdrop-blur-sm sm:p-8')}>
+        <div className="grid gap-8 md:grid-cols-[280px_minmax(0,1fr)] md:items-center">
+          <Art track={ab.track} className="w-full max-w-[280px] rounded-xl shadow-[0_30px_80px_-30px_rgba(47,79,168,0.7)]" />
           <div className="min-w-0">
             <p className="eyebrow mb-4 text-scarf-text">{mode}</p>
-            <h2 className="font-heading text-[clamp(2rem,4vw,3.25rem)] leading-none text-ink">{ab.track.title}</h2>
-            <p className="mt-2 text-white/60">{ab.track.artist}</p>
+            <h2 className="text-balance font-heading text-[clamp(2rem,4vw,3rem)] leading-none text-ink">{ab.track.title}</h2>
+            <p className="mt-2 text-white/70">{ab.track.artist}</p>
             <div className="mt-6 flex flex-wrap items-center gap-4">
               <PlayButton playing={ab.playing} onClick={ab.play} loading={ab.loading} />
               <div role="radiogroup" aria-label="Version" className="relative inline-flex rounded-full bg-black/40 p-1">
@@ -129,15 +132,17 @@ function Player({ mode, onBack }: { mode: Mode; onBack: () => void }) {
         </div>
       </div>
 
-      <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {list.map((t, i) => (
-          <button key={t.title} type="button" onClick={() => ab.select(i)} onPointerEnter={() => warm(t)} onPointerDown={() => warm(t)} className={cn('text-left transition-opacity', i === ab.idx ? 'opacity-100' : 'opacity-60 hover:opacity-100')}>
-            <Art track={t} className={cn('w-full rounded-lg', i === ab.idx && 'ring-2 ring-scarf-text')} />
-            <span className="mt-2 block truncate text-sm text-ink">{t.title}</span>
-            <span className="block truncate text-xs text-white/50">{t.artist}</span>
-          </button>
-        ))}
-      </div>
+      {list.length > 1 && (
+        <div className="mt-12 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
+          {list.map((t, i) => (
+            <button key={t.title} type="button" aria-pressed={i === ab.idx} onClick={() => ab.select(i)} onPointerEnter={() => warm(t)} onPointerDown={() => warm(t)} className={cn('min-w-0 text-left transition-opacity', i === ab.idx ? 'opacity-100' : 'opacity-60 hover:opacity-100')}>
+              <Art track={t} className={cn('w-full rounded-xl', i === ab.idx && 'ring-2 ring-scarf-text ring-offset-2 ring-offset-[var(--color-scarf-deep)]')} />
+              <span className="mt-2.5 block truncate text-sm text-ink">{t.title}</span>
+              <span className="block truncate text-xs text-white/55">{t.artist}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </>
   )
 }
@@ -148,15 +153,12 @@ export default function BeforeAfter() {
     <PageShell eyebrow="Hear the difference" title="Before / After">
       {mode ? <Player mode={mode} onBack={() => setMode(null)} /> : <Choose onPick={setMode} />}
 
-      <section className="mt-24 grid gap-8 rounded-3xl border border-white/[0.08] bg-black/20 p-6 sm:p-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-        <div>
-          <p className="eyebrow text-white/50">Your track next</p>
-          <p className="mt-4 max-w-xl font-heading text-[1.6rem] leading-snug text-ink">
-            Send a finished mix to be mastered, or your stems to be mixed and mastered.
-          </p>
-          <p className="mt-4 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/45">Mastering from £80 per track</p>
-        </div>
-        <div className="flex flex-wrap gap-3">
+      {/* The one closing call to action: on the page, no panel, centred like the page header. */}
+      <section className="mt-28 border-t border-white/[0.08] pt-16 text-center">
+        <p className="mx-auto max-w-[20ch] text-balance font-heading text-[2.4rem] leading-tight text-ink">
+          Want to hear your track like this?
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Pill to="/services">Rates</Pill>
           <Pill to="/contact" solid>Send a track</Pill>
         </div>

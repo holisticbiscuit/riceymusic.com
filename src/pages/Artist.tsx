@@ -74,31 +74,27 @@ export default function Artist() {
     <PageShell title="Artist">
       <Light height={1300} />
       <div className="relative">
-        <section className="grid items-center gap-10 md:grid-cols-2">
+        <section className="grid items-center gap-10 md:grid-cols-2 md:gap-14">
           <div className="glass rounded-[2rem] p-2">
             <div className="relative overflow-hidden rounded-3xl bg-black">
               <img src="/images/portrait-tee.webp" alt="Ricey" className="aspect-[4/5] w-full object-cover object-[50%_30%]" />
               <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
             </div>
           </div>
-          <div>
-            <h2 className="font-heading text-[clamp(2.4rem,4.5vw,3.6rem)] leading-[1.05] text-ink">
-              Dark, immersive progressive house, made between thought and feeling.
-            </h2>
-            <p className="mt-6 max-w-md leading-relaxed text-white/65">
-              Techno and progressive artist and audio engineer. Debut single Years out now on {RELEASE.label}.
-            </p>
-          </div>
+          {/* statement alone: Years is introduced by its own panel right below */}
+          <h2 className="max-w-[17ch] text-balance font-heading text-[clamp(2.4rem,4.5vw,3.6rem)] leading-[1.14] text-ink">
+            Dark, immersive progressive house, made between thought and feeling.
+          </h2>
         </section>
 
-        <section className="glass mt-24 grid gap-8 rounded-3xl p-6 sm:p-9 md:grid-cols-[260px_minmax(0,1fr)] md:items-center">
+        <section className="glass mt-28 grid gap-8 rounded-[2rem] p-6 sm:p-9 md:grid-cols-[260px_minmax(0,1fr)] md:items-center md:gap-10">
           <img src={RELEASE.art} alt="Years cover art" className="aspect-square w-full max-w-[260px] rounded-2xl object-cover" />
           <div className="min-w-0">
             <p className="eyebrow text-scarf-text">Latest release</p>
-            <h2 className="mt-3 font-heading text-[3rem] leading-none text-ink">{RELEASE.title}</h2>
-            <p className="mt-4 max-w-lg text-white/70">{RELEASE.blurb}</p>
+            <h2 className="mt-3 font-heading text-[2.4rem] leading-none text-ink">{RELEASE.title}</h2>
+            <p className="mt-4 max-w-[60ch] leading-relaxed text-white/70">{RELEASE.blurb}</p>
             <YearsExcerpt className="mt-7" />
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-8 flex flex-wrap gap-2">
               {RELEASE.links.filter(l => l.url).map(l => (
                 <a key={l.name} href={l.url} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-5 text-sm text-ink transition-colors hover:border-white/60">
                   {l.name}
@@ -108,56 +104,59 @@ export default function Artist() {
           </div>
         </section>
 
-        <section className="mt-24">
+        <section className="mt-28">
           <h2 className="mb-8 font-heading text-[2.4rem] leading-none text-ink">Written &amp; produced</h2>
-          <div className="flex gap-4 overflow-x-auto pb-3">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
             {PRODUCTIONS.map(p => {
               const body = (
                 <>
-                  <img src={p.art} alt={`${p.title} by ${p.artist}`} className="aspect-square w-full rounded-xl object-cover" />
+                  <img src={p.art} alt={`${p.title} by ${p.artist}`} className="aspect-square w-full rounded-2xl object-cover" />
                   <span className="mt-3 block truncate font-heading text-[1.15rem] text-ink">{p.title}</span>
-                  <span className="block truncate text-sm text-white/50">{p.artist}</span>
+                  <span className="block truncate text-sm text-white/55">{p.artist}</span>
                 </>
               )
               return p.url ? (
-                <a key={p.id} href={p.url} target="_blank" rel="noopener" className="w-44 shrink-0">{body}</a>
+                <a key={p.id} href={p.url} target="_blank" rel="noopener" className="w-40 shrink-0 snap-start sm:w-44">{body}</a>
               ) : (
-                <div key={p.id} className="w-44 shrink-0">{body}</div>
+                <div key={p.id} className="w-40 shrink-0 snap-start sm:w-44">{body}</div>
               )
             })}
           </div>
         </section>
 
         {SUPPORT.length > 0 && (
-          <section className="glass mt-24 rounded-3xl p-6 sm:p-9">
+          // Support sits on the page: the portrait frame and the Years panel are the only glass
+          <section className="mt-28">
             <h2 className="mb-8 font-heading text-[2.4rem] leading-none text-ink">Support</h2>
-            {SUPPORT.map(s => (
-              <figure key={s.source} className="grid items-center gap-8 md:grid-cols-[220px_minmax(0,1fr)]">
-                {s.youtubeId && (
-                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/40">
-                    <iframe
-                      src={`https://www.youtube-nocookie.com/embed/${s.youtubeId}`}
-                      title={`${s.source} ${s.context}`}
-                      loading="lazy"
-                      allow="encrypted-media; picture-in-picture"
-                      allowFullScreen
-                      className="aspect-[9/16] w-full"
-                      style={{ border: 0 }}
-                    />
-                  </div>
-                )}
-                <figcaption>
-                  <p className="eyebrow text-scarf-text">{s.context}</p>
-                  <p className="mt-3 font-heading text-[clamp(2rem,4vw,3rem)] leading-none text-ink">{s.source}</p>
-                  {s.url && <div className="mt-6"><Pill href={s.url}>Watch</Pill></div>}
-                </figcaption>
-              </figure>
-            ))}
+            <div className="max-w-3xl">
+              {SUPPORT.map(s => (
+                <figure key={s.source} className="grid items-center gap-8 md:grid-cols-[220px_minmax(0,1fr)]">
+                  {s.youtubeId && (
+                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${s.youtubeId}`}
+                        title={`${s.source} ${s.context}`}
+                        loading="lazy"
+                        allow="encrypted-media; picture-in-picture"
+                        allowFullScreen
+                        className="aspect-[9/16] w-full"
+                        style={{ border: 0 }}
+                      />
+                    </div>
+                  )}
+                  <figcaption>
+                    <p className="eyebrow text-scarf-text">{s.context}</p>
+                    <p className="mt-3 font-heading text-[clamp(2rem,4vw,3rem)] leading-none text-ink">{s.source}</p>
+                    {s.url && <div className="mt-6"><Pill href={s.url}>Watch</Pill></div>}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </section>
         )}
 
         {PLAYLIST.url && (
-          <section className="mt-24">
+          <section className="mt-28">
             <h2 className="mb-8 font-heading text-[2.4rem] leading-none text-ink">{PLAYLIST.title}</h2>
             <div className="max-w-3xl overflow-hidden rounded-2xl">
               <iframe
