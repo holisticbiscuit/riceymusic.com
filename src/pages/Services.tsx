@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SealCheck } from '@phosphor-icons/react'
 import { PageShell } from '../components/PageShell'
 import { Pill } from '../components/Pill'
 import { Light } from '../components/Light'
@@ -88,6 +89,10 @@ export default function Services() {
             )
           })}
         </div>
+        <p className="mt-5 flex items-center justify-center gap-2 text-center text-sm text-white/60">
+          <SealCheck size={16} weight="light" className="shrink-0 text-scarf-text" aria-hidden />
+          Every master is delivered label ready, to the spec your label or distributor asks for.
+        </p>
 
         {/* the builder for the chosen card: flat, ruled off, so the cards stay the one panel group */}
         <div className="mt-8 grid gap-8 border-y border-white/12 px-1 py-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:px-2">
