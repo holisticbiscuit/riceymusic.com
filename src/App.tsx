@@ -14,6 +14,8 @@ import NotFound from './pages/NotFound'
 
 // The admin (and its MP3 encoder) loads only when someone opens /admin.
 const Admin = lazy(() => import('./pages/Admin'))
+// Worlds (and three.js with it) loads only when someone opens /worlds.
+const Worlds = lazy(() => import('./pages/Worlds'))
 
 function Layout() {
   const { pathname } = useLocation()
@@ -21,6 +23,8 @@ function Layout() {
     window.scrollTo(0, 0)
   }, [pathname])
   const home = pathname === '/'
+  // Worlds fills the screen, so it has no footer either.
+  const bare = home || pathname === '/worlds'
   return (
     <>
       <a
@@ -33,7 +37,7 @@ function Layout() {
       <main id="main">
         <Outlet />
       </main>
-      {!home && <Footer />}
+      {!bare && <Footer />}
       <div className="grain" aria-hidden />
     </>
   )
@@ -51,6 +55,7 @@ export default function App() {
           <Route path="services" element={<Services />} />
           <Route path="about" element={<About />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="worlds" element={<Suspense fallback={<div className="h-svh bg-[#02040c]" />}><Worlds /></Suspense>} />
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="admin" element={<Suspense fallback={<div className="min-h-svh bg-scarf-deep" />}><Admin /></Suspense>} />

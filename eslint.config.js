@@ -19,4 +19,16 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Worlds draws with three.js: scene objects, uniforms and refs are meant to be changed every
+    // frame inside useFrame, which these React Compiler rules read as mistakes. (The compiler
+    // isn't used here.) Its shared pieces also live beside the components that use them.
+    files: ['src/worlds/**/*.{ts,tsx}', 'src/pages/Worlds.tsx'],
+    rules: {
+      'react-hooks/immutability': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/use-memo': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

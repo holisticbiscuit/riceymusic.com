@@ -25,3 +25,13 @@ id = "bbe400e1442b4e61903009d426466f70"
 [[send_email]]
 name = "EMAIL"
 destination_address = "oliverraiss@pm.me"
+
+# Worlds: one shared space where every visitor is a light. A Durable Object on the free plan
+# (SQLite-backed); if a free limit is ever reached it stops for the day rather than billing.
+[[durable_objects.bindings]]
+name = "SPACE"
+class_name = "Space"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Space"]

@@ -4,7 +4,7 @@
 // src/App.tsx.
 import { copyFileSync } from 'node:fs'
 
-const PAGES = ['credits', 'artist', 'before-after', 'services', 'about', 'contact', 'admin']
+const PAGES = ['credits', 'artist', 'before-after', 'services', 'about', 'contact', 'worlds', 'admin']
 
 copyFileSync('dist/index.html', 'dist/404.html')
 for (const page of PAGES) copyFileSync('dist/index.html', `dist/${page}.html`)

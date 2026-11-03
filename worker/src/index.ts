@@ -5,6 +5,9 @@ import { DATA_PATH, audioPath, isSha, validateEntry, type ABEntry } from './ab'
 import { GitHubError, commit, createBlob, readText, type Repo } from './github'
 import { EmailMessage } from 'cloudflare:email'
 import { enquiryText, mimeMessage, validateEnquiry, type Enquiry } from './contact'
+import { spaceOriginOk } from './space'
+
+export { Space } from './spaceRoom'
 
 export interface Env {
   CREDITS: KVNamespace
@@ -22,6 +25,8 @@ export interface Env {
   EMAIL?: SendEmail
   CONTACT_TO?: string
   CONTACT_FROM?: string
+  // Worlds: the one shared space every visitor's light flies in.
+  SPACE: DurableObjectNamespace
 }
 
 const MAX_CLIP_BYTES = 20 * 1024 * 1024
@@ -46,6 +51,16 @@ export default {
       new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...cors, ...extra } })
 
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
+
+    // Worlds: a WebSocket into the shared space. Needs no secrets, so it comes first.
+    if (new URL(req.url).pathname === '/space') {
+      if (req.headers.get('upgrade')?.toLowerCase() !== 'websocket') return json({ error: 'Expected a WebSocket' }, 426)
+      if (!spaceOriginOk(origin, env.ALLOWED_ORIGINS)) return json({ error: 'Not allowed' }, 403)
+      // The city comes from Cloudflare, never from the visitor.
+      const headers = new Headers(req.headers)
+      headers.set('x-city', String((req.cf as { city?: string } | undefined)?.city ?? ''))
+      return env.SPACE.get(env.SPACE.idFromName('space')).fetch(new Request(req, { headers }))
+    }
     if (!env.ADMIN_USER || !env.ADMIN_PASS || !env.TOKEN_SECRET) return json({ error: 'Server is missing its secrets' }, 500)
 
     const url = new URL(req.url)

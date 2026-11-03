@@ -9,6 +9,7 @@ const LINKS: [string, string][] = [
   ['/before-after', 'Before / After'],
   ['/services', 'Services'],
   ['/about', 'About'],
+  ['/worlds', 'Worlds'],
 ]
 
 export function Nav() {
