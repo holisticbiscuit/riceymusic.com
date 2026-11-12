@@ -24,7 +24,8 @@ function Layout() {
   }, [pathname])
   const home = pathname === '/'
   // Worlds fills the screen, so it has no footer either.
-  const bare = home || pathname === '/worlds'
+  const worlds = pathname === '/worlds'
+  const bare = home || worlds
   return (
     <>
       <a
@@ -38,7 +39,8 @@ function Layout() {
         <Outlet />
       </main>
       {!bare && <Footer />}
-      <div className="grain" aria-hidden />
+      {/* The film grain would sit over the 3D and soften it, so Worlds goes without */}
+      {!worlds && <div className="grain" aria-hidden />}
     </>
   )
 }

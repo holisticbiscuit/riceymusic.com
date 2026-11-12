@@ -7,7 +7,10 @@ import { useFrame, useLoader } from '@react-three/fiber'
 import { Html, Trail } from '@react-three/drei'
 import * as THREE from 'three'
 import type { YearsAudio } from './audio'
+// Lossless, and in two files with no alpha: an alpha channel let the encoder drop the colour
+// wherever the crack mask was 0 (most of the planet), and lossy WebP halved the colour detail.
 import surfaceUrl from './years-surface.webp'
+import veinsUrl from './years-veins.webp'
 
 const RED = '#e0141b'
 
@@ -39,16 +42,15 @@ void main(){
 }`
 
 const planetFrag = /* glsl */ `
-uniform float uTime; uniform float uLevel; uniform float uRings; uniform vec3 uLight; uniform sampler2D uMap;
+uniform float uTime; uniform float uLevel; uniform float uRings; uniform vec3 uLight; uniform sampler2D uMap; uniform sampler2D uVeins;
 varying vec3 vPos; varying vec3 vN; varying vec3 vView; varying vec3 vWorldN; varying vec2 vUv;
 ${NOISE}
-// The red marble and its fine dark cracks are baked into uMap ahead of time (RGB colour, A = crack),
+// The red marble and its fine dark cracks are baked ahead of time (uMap: colour, uVeins: the cracks),
 // so the planet draws at once instead of compiling heavy noise. Lighting and glow stay live.
 void main(){
   vec3 p = normalize(vPos);
-  vec4 tex = texture2D(uMap, vUv);
-  vec3 col = pow(tex.rgb, vec3(2.2));
-  float veins = tex.a;
+  vec3 col = pow(texture2D(uMap, vUv).rgb, vec3(2.2));
+  float veins = texture2D(uVeins, vUv).r;
   // A touch of fine grain so it stays crisp up close.
   col *= 0.92 + 0.16 * snoise(p * 90.0);
   float band = smoothstep(0.08, 0.5, col.r);
@@ -110,15 +112,17 @@ const LIGHT = new THREE.Vector3(-0.6, 0.45, 0.75)
 export function YearsPlanet({ audio, radius = 1.4, onClick, hoverable }: { audio?: YearsAudio; radius?: number; onClick?: () => void; hoverable?: boolean }) {
   const mesh = useRef<THREE.Mesh>(null)
   const [hover, setHover] = useState(false)
-  const map = useLoader(THREE.TextureLoader, surfaceUrl)
+  const [map, veins] = useLoader(THREE.TextureLoader, [surfaceUrl, veinsUrl])
   const uniforms = useMemo(() => {
-    // Raw bytes in, converted in the shader: alpha holds the cracks, not opacity.
-    map.colorSpace = THREE.NoColorSpace
-    map.anisotropy = 8
-    map.wrapS = THREE.RepeatWrapping
-    map.needsUpdate = true
-    return { uTime: { value: 0 }, uLevel: { value: 0 }, uRings: { value: 6 }, uLight: { value: LIGHT.clone() }, uMap: { value: map } }
-  }, [map])
+    // Raw bytes in, converted in the shader.
+    for (const t of [map, veins]) {
+      t.colorSpace = THREE.NoColorSpace
+      t.anisotropy = 8
+      t.wrapS = THREE.RepeatWrapping
+      t.needsUpdate = true
+    }
+    return { uTime: { value: 0 }, uLevel: { value: 0 }, uRings: { value: 6 }, uLight: { value: LIGHT.clone() }, uMap: { value: map }, uVeins: { value: veins } }
+  }, [map, veins])
   const atmo = useMemo(() => ({ uColor: { value: new THREE.Color(RED) }, uLevel: { value: 0 }, uLight: { value: LIGHT.clone() } }), [])
   const ring = useMemo(() => ({ uInner: { value: radius * 1.5 }, uOuter: { value: radius * 2.6 }, uRings: { value: 6 }, uLevel: { value: 0 }, uTime: { value: 0 } }), [radius])
   const scale = useMemo(() => new THREE.Vector3(1, 1, 1), [])
